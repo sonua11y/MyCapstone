@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://mycapstone-1-h9gg.onrender.com';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://mycapstone-2.onrender.com';
 
 // Debug information
 console.log('Environment Variables:', {
