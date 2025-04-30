@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     "Email id": {
@@ -25,14 +24,9 @@ const userSchema = new mongoose.Schema({
 }, { collection: 'Admin Users' });
 
 // Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
-    try {
-        // Since passwords are stored in plain text, do a direct comparison
-        return candidatePassword === this.Password;
-    } catch (error) {
-        console.error('Password comparison error:', error);
-        throw error;
-    }
+userSchema.methods.comparePassword = function(candidatePassword) {
+    // Direct string comparison since passwords are stored as plain text
+    return candidatePassword === this.Password;
 };
 
 const User = mongoose.model('User', userSchema);
