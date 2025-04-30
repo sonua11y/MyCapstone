@@ -1,0 +1,141 @@
+.calendar {
+  padding: 16px;
+  background-color: var(--card-bg);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-months {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.calendar-month {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendar-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.calendar-caption-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-nav-button:hover {
+  background-color: var(--light-bg);
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar-head-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendar-head-cell {
+  width: 40px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dark);
+  opacity: 0.7;
+}
+
+.calendar-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.calendar-cell {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-day {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: var(--light-bg);
+}
+
+.calendar-day-selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.calendar-day-today {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.calendar-day-outside {
+  color: var(--text-dark);
+  opacity: 0.3;
+}
+
+.calendar-day-disabled {
+  color: var(--text-dark);
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendar-day-range-middle {
+  background-color: var(--light-bg);
+}
+
+.calendar-day-hidden {
+  visibility: hidden;
+}
+
+.calendar-icon-left,
+.calendar-icon-right {
+  width: 16px;
+  height: 16px;
+  color: var(--text-dark);
+} 

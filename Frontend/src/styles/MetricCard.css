@@ -1,0 +1,73 @@
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric-icon-container.bg-blue {
+  background-color: #e0e7ff;
+}
+
+.metric-icon-container.bg-green {
+  background-color: #dcfce7;
+}
+
+.metric-icon-container.bg-yellow {
+  background-color: #fef3c7;
+}
+
+.metric-icon-container.bg-red {
+  background-color: #fee2e2;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.metric-title {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.metric-value {
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.metric-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-price {
+  color: #059669;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.metric-time {
+  color: #6b7280;
+  font-size: 0.875rem;
+} 

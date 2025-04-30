@@ -1,0 +1,72 @@
+/* Header styles */
+.header {
+  background-color: var(--deep-purple);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  background-color: #ED3B36;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.profile-section {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main content */
+.main-content {
+  padding: 0;
+  flex: 1;
+}
+
+.metrics-container {
+  background-color: var(--deep-purple);
+  padding: 0 40px 40px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .metrics-container {
+    flex-direction: column;
+    padding: 0 20px 20px;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+} 

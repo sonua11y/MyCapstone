@@ -1,0 +1,72 @@
+.accordion-item {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.accordion-header {
+  width: 100%;
+}
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.accordion-trigger:hover {
+  background-color: var(--light-bg);
+}
+
+.accordion-chevron {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.accordion-trigger[data-state="open"] .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  overflow: hidden;
+  background-color: var(--card-bg);
+}
+
+.accordion-content[data-state="open"] {
+  animation: slideDown 0.2s ease-out;
+}
+
+.accordion-content[data-state="closed"] {
+  animation: slideUp 0.2s ease-out;
+}
+
+.accordion-content-inner {
+  padding: 16px;
+}
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+} 

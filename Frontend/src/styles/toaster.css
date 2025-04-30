@@ -1,0 +1,134 @@
+/* Sonner toast styles */
+.Toastify__toast {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.Toastify__toast--success {
+  border-left: 4px solid #22C55E !important;
+}
+
+.Toastify__toast--error {
+  border-left: 4px solid #EF4444 !important;
+}
+
+.Toastify__toast--warning {
+  border-left: 4px solid #F59E0B !important;
+}
+
+.Toastify__toast--info {
+  border-left: 4px solid #3B82F6 !important;
+}
+
+.Toastify__toast-body {
+  color: var(--text-dark) !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.Toastify__close-button {
+  color: var(--text-dark) !important;
+  opacity: 0.5 !important;
+  transition: opacity 0.2s !important;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+}
+
+/* Toast container */
+.toaster {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast-success {
+  border-left: 4px solid #22C55E;
+}
+
+.toast-error {
+  border-left: 4px solid #EF4444;
+}
+
+.toast-warning {
+  border-left: 4px solid #F59E0B;
+}
+
+.toast-info {
+  border-left: 4px solid #3B82F6;
+}
+
+.toast-title {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.toast-description {
+  color: var(--text-dark);
+  opacity: 0.7;
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+} 

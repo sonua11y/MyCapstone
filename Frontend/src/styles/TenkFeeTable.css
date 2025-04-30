@@ -1,0 +1,36 @@
+.tenk-table th {
+  background-color: #f8fafc;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #000000;
+  font-size: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenk-table td {
+  padding: 12px 16px;
+  color: #000000;
+  font-size: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenk-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.tenk-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tenk-badge.yes {
+  background-color: #dcfce7;
+  color: #000000;
+}
+
+.tenk-badge.no {
+  background-color: #fee2e2;
+  color: #000000;
+} 
