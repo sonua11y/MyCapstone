@@ -43,8 +43,8 @@ const port = process.env.PORT || 5000;
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://capi-safety.netlify.app',
-  'https://capi-safety.onrender.com'
+  'https://studentsadmissiontracker.netlify.app',
+  'https://mycapstone-1-h9gg.onrender.com'
 ];
 
 app.use(cors({
