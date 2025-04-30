@@ -42,6 +42,8 @@ const port = process.env.PORT || 5000;
 // CORS Configuration
 const allowedOrigins = [
   process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.FRONTEND_URL,  // Development/Production frontend URL
+  'https://studentsadmissiontracker.netlify.app',  // Add your Netlify domain
+  '*'  // Allow all origins during testing
 ];
 
 app.use(cors({
@@ -49,16 +51,22 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -114,8 +122,12 @@ app.get('/', (req, res) => {
 // Test route for CORS
 app.get('/test-cors', (req, res) => {
   res.json({ 
-    message: 'CORS is working',
-    origin: req.headers.origin || 'No origin header'
+    message: 'CORS Test Endpoint',
+    origin: req.headers.origin || 'No origin header',
+    headers: req.headers,
+    allowedOrigins: allowedOrigins,
+    environment: process.env.NODE_ENV,
+    frontendUrl: process.env.FRONTEND_URL
   });
 });
 
