@@ -1,0 +1,16 @@
+{
+  "titles": {
+    "admissionChart": {
+      "title": "Student Admissions Through Years",
+      "subtitle": "Distribution of students across different colleges"
+    },
+    "metrics": {
+      "title": "Metrics Overview",
+      "subtitle": "Key performance indicators"
+    },
+    "tenKFees": {
+      "title": "10K Fees Status",
+      "subtitle": "Track fee payments across colleges"
+    }
+  }
+} 
