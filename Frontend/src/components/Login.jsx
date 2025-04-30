@@ -73,9 +73,9 @@ const Login = () => {
             <h1>Welcome Back</h1>
             <p>Please enter your details to login</p>
           </div>
-
+          
           {error && <div className="error-message">{error}</div>}
-
+          
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
               <label htmlFor="email">Email</label>
@@ -105,25 +105,25 @@ const Login = () => {
               Login
             </button>
 
-            <div className="forgot-password">
-              Forgot your password?{' '}
-              <a href="/reset-password" className="reset-link">
-                Reset Password
-              </a>
-            </div>
+          <div className="forgot-password">
+            Forgot your password?{' '}
+            <a href="/reset-password" className="reset-link">
+              Reset Password
+            </a>
+          </div>
 
-            <div className="or-divider">
-              <span>OR</span>
-            </div>
-            
-            <button 
+          <div className="or-divider">
+            <span>OR</span>
+          </div>
+          
+          <button 
               type="button"
-              onClick={handleGoogleLogin}
-              className="google-login-btn"
-            >
-              <FcGoogle className="google-icon" />
-              Continue with Google
-            </button>
+            onClick={handleGoogleLogin}
+            className="google-login-btn"
+          >
+            <FcGoogle className="google-icon" />
+            Continue with Google
+          </button>
           </form>
         </div>
       </div>

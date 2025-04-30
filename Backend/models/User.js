@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
 // Method to compare password
 userSchema.methods.comparePassword = function(candidatePassword) {
     // Direct string comparison since passwords are stored as plain text
-    return candidatePassword === this.Password;
+        return candidatePassword === this.Password;
 };
 
 const User = mongoose.model('User', userSchema);
