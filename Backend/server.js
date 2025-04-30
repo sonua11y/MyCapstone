@@ -41,9 +41,8 @@ const port = process.env.PORT || 5000;
 
 // CORS Configuration
 const allowedOrigins = [
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.FRONTEND_URL,  // Development/Production frontend URL
-  'https://studentsadmissiontracker.netlify.app',  // Add your Netlify domain
-  '*'  // Allow all origins during testing
+  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studentsadmissiontracker.netlify.app',
+  'https://studentsadmissiontracker.netlify.app'
 ];
 
 app.use(cors({
@@ -51,7 +50,7 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
@@ -127,7 +126,7 @@ app.get('/test-cors', (req, res) => {
     headers: req.headers,
     allowedOrigins: allowedOrigins,
     environment: process.env.NODE_ENV,
-    frontendUrl: process.env.FRONTEND_URL
+    frontendUrl: 'https://studentsadmissiontracker.netlify.app'
   });
 });
 
