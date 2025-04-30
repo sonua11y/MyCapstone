@@ -49,6 +49,55 @@ app.use(cors({
 
 app.use(express.json());
 
+// Root route to show server status
+app.get('/', (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Backend Server Status</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+          }
+          .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+            color: #1a237e;
+            margin-bottom: 10px;
+          }
+          .status {
+            color: #4caf50;
+            font-size: 18px;
+          }
+          .timestamp {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Backend Server</h1>
+          <p class="status">✅ Server is running</p>
+          <p class="timestamp">Last checked: ${new Date().toLocaleString()}</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 // Test route for CORS
 app.get('/test-cors', (req, res) => {
   res.json({ 
