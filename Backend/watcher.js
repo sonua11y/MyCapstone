@@ -5,9 +5,26 @@ const csv = require('csv-parser');
 const mongoose = require('mongoose');
 const Student = require('./models/Student');
 
-// Set CSV path consistently
-const filePath = 'C:/Users/sripr/Downloads/My Mock Data.csv';
+// Skip watcher in production
+if (process.env.NODE_ENV === 'production') {
+  console.log('CSV Watcher is disabled in production mode');
+  module.exports = {
+    getLastModifiedTime: () => new Date()
+  };
+  return;
+}
+
+// Set CSV path from environment variable or use default for development
+const filePath = process.env.CSV_PATH || path.join(__dirname, 'data', 'mock-data.csv');
 console.log('Watching for changes in:', filePath);
+
+// Create data directory if it doesn't exist (for development)
+if (process.env.NODE_ENV !== 'production') {
+  const dataDir = path.join(__dirname, 'data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+}
 
 // Last modified time tracker
 let lastModifiedTime = null;
@@ -18,13 +35,14 @@ try {
     lastModifiedTime = stats.mtime;
     console.log('Initial CSV last modified time:', lastModifiedTime);
 } catch (err) {
-    console.error('Error getting initial file stats:', err);
+    console.log('CSV file not found. Waiting for file to be created...');
+    lastModifiedTime = new Date();
 }
 
-// MongoDB Connection
-mongoose.connect('mongodb+srv://sripranathiindupalli:studentfeetracker@capi.eqhj3yr.mongodb.net/StudentData?retryWrites=true&w=majority&appName=Capi')
+// MongoDB Connection (use environment variable)
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://sripranathiindupalli:studentfeetracker@capi.eqhj3yr.mongodb.net/StudentData?retryWrites=true&w=majority&appName=Capi')
   .then(() => {
-    console.log('MongoDB Connected');
+    console.log('MongoDB Connected for CSV Watcher');
     console.log('Using DB:', mongoose.connection.db.databaseName);
   })
   .catch(err => console.log(err));
