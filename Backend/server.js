@@ -39,33 +39,33 @@ require('./config/passport');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Configure CORS to allow requests from your frontend
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://studentsadmissiontracker.netlify.app',
-  'https://mycapstone-1-h9gg.onrender.com'
-];
-
+// CORS Configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
+  origin: '*', // Temporarily allow all origins for debugging
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'Content-Type'],
-  maxAge: 86400 // 24 hours
+  credentials: true
 }));
 
 app.use(express.json());
+
+// Test route for CORS
+app.get('/test-cors', (req, res) => {
+  res.json({ 
+    message: 'CORS is working',
+    origin: req.headers.origin || 'No origin header'
+  });
+});
+
+// Health check endpoint with more details
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    headers: req.headers
+  });
+});
 
 // If SESSION_SECRET is not set, use a fallback (only for development)
 if (!process.env.SESSION_SECRET) {
@@ -159,9 +159,4 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     path: req.path
   });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
 });
