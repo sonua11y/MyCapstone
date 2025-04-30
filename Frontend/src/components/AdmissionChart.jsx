@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import { X } from 'lucide-react';
 import '../styles/AdmissionChart.css';
+import api from '../utils/api';
 
 ChartJS.register(
   CategoryScale,
@@ -31,20 +32,18 @@ const AdmissionChart = ({ onCollegeSelect, selectedCollege }) => {
     const fetchData = async () => {
       try {
         // Fetch admissions data
-        const admissionsResponse = await fetch('http://localhost:5000/students/admissions');
-        if (!admissionsResponse.ok) {
+        const admissionsResponse = await api.get('/students/admissions');
+        if (!admissionsResponse.data) {
           throw new Error('Failed to fetch data');
         }
-        const admissionsData = await admissionsResponse.json();
-        setData(admissionsData);
+        setData(admissionsResponse.data);
 
         // Fetch last update time
-        const updateResponse = await fetch('http://localhost:5000/students/last-updated');
-        if (!updateResponse.ok) {
+        const updateResponse = await api.get('/students/last-updated');
+        if (!updateResponse.data) {
           throw new Error('Failed to fetch last update time');
         }
-        const updateData = await updateResponse.json();
-        setLastUpdate(updateData.lastModified);
+        setLastUpdate(updateResponse.data.lastModified);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error.message);

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSearch } from 'react-icons/fa';
+import api from '../utils/api';
 import '../styles/AutoCompleteSearch.css';
 
 const AutoCompleteSearch = ({ onSearch, onSuggestionSelect, searchFields, placeholder }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapperRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -29,29 +31,14 @@ const AutoCompleteSearch = ({ onSearch, onSuggestionSelect, searchFields, placeh
         return;
       }
 
-      setLoading(true);
+      setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/students/suggestions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: searchTerm.trim(),
-            searchFields,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch suggestions');
-        }
-
-        const data = await response.json();
-        setSuggestions(data);
+        const response = await api.get(`/students/search?term=${encodeURIComponent(searchTerm)}`);
+        setSuggestions(response.data);
         
         // Set the first suggestion as the inline suggestion
-        if (data.length > 0) {
-          const firstSuggestion = data[0];
+        if (response.data.length > 0) {
+          const firstSuggestion = response.data[0];
           if (firstSuggestion.toLowerCase().startsWith(searchTerm.toLowerCase())) {
             setSelectedSuggestion(firstSuggestion);
           } else {
@@ -65,13 +52,13 @@ const AutoCompleteSearch = ({ onSearch, onSuggestionSelect, searchFields, placeh
         setSuggestions([]);
         setSelectedSuggestion('');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    const debounceTimer = setTimeout(fetchSuggestions, 150);
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(debounceTimer);
-  }, [searchTerm, searchFields]);
+  }, [searchTerm]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -119,7 +106,7 @@ const AutoCompleteSearch = ({ onSearch, onSuggestionSelect, searchFields, placeh
           </div>
         )}
       </div>
-      {loading && (
+      {isLoading && (
         <div className="autocomplete-loading">
           Loading...
         </div>

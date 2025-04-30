@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, LineChart, Line } from 'recharts';
 import '../styles/CentralContent.css';
+import api from '../utils/api';
 
 const CentralContent = ({ activeSubTab }) => {
   const [pieData, setPieData] = useState([
@@ -23,16 +24,10 @@ const CentralContent = ({ activeSubTab }) => {
 
   // Fetch last update time
   useEffect(() => {
-    fetch('http://localhost:5000/students/last-updated')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data.lastModified) {
-          setLastUpdate(data.lastModified);
+    api.get('/students/last-updated')
+      .then(response => {
+        if (response.data.lastModified) {
+          setLastUpdate(response.data.lastModified);
         } else {
           setLastUpdate(new Date().toLocaleDateString('en-GB'));
         }
@@ -55,14 +50,14 @@ const CentralContent = ({ activeSubTab }) => {
     const fetchData = async () => {
       try {
         // Fetch fee collection data
-        const feeResponse = await fetch('http://localhost:5000/students/sem-fee-paid');
-        const feeData = await feeResponse.json();
+        const feeResponse = await api.get('/students/sem-fee-paid');
+        const feeData = feeResponse.data;
         const totalFees = feeData.reduce((sum, item) => sum + (item.fees * 350000), 0);
         setTotalCollected(totalFees);
 
         // Fetch total students
-        const studentResponse = await fetch('http://localhost:5000/students/count');
-        const studentData = await studentResponse.json();
+        const studentResponse = await api.get('/students/count');
+        const studentData = studentResponse.data;
         setTotalStudents(studentData.count);
         setTotalPending(studentData.count * 350000);
 
@@ -81,9 +76,8 @@ const CentralContent = ({ activeSubTab }) => {
   useEffect(() => {
     const fetchWithdrawalData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/students/withdrawals');
-        if (!response.ok) throw new Error('Failed to fetch withdrawal data');
-        const data = await response.json();
+        const response = await api.get('/students/withdrawals');
+        const data = response.data;
         
         // Transform the data into the waterfall format
         const transformedData = data.map(item => ({
@@ -107,9 +101,8 @@ const CentralContent = ({ activeSubTab }) => {
     const fetchFillingData = async () => {
       try {
         console.log('Fetching filling status data...');
-        const response = await fetch('http://localhost:5000/students/fast-slow-filling-colleges');
-        if (!response.ok) throw new Error('Failed to fetch filling status data');
-        const data = await response.json();
+        const response = await api.get('/students/fast-slow-filling-colleges');
+        const data = response.data;
         console.log('Received filling status data:', data);
         // Format the data to match what the chart expects
         const formattedData = [
@@ -136,13 +129,11 @@ const CentralContent = ({ activeSubTab }) => {
     }
   }, [activeSubTab]);
 
-  // Add this useEffect for previous years data
   useEffect(() => {
     const fetchPreviousYearsData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/students/previous-years');
-        if (!response.ok) throw new Error('Failed to fetch previous years data');
-        const data = await response.json();
+        const response = await api.get('/students/previous-years');
+        const data = response.data;
         setPreviousYearsData(data);
       } catch (error) {
         console.error('Error fetching previous years data:', error);
@@ -156,11 +147,8 @@ const CentralContent = ({ activeSubTab }) => {
 
   const fetchFemaleData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/students/girls');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch female student data: ${response.status} ${response.statusText}`);
-      }
-      const result = await response.json();
+      const response = await api.get('/students/girls');
+      const result = response.data;
       
       // Transform the data into the format expected by the chart
       const formattedData = Object.entries(result).map(([college, count]) => ({

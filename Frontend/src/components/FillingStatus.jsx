@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import api from '../utils/api';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const FillingStatus = () => {
     const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('http://localhost:5000/students/filling-status');
-                const jsonData = await response.json();
-                setData(jsonData);
+                setLoading(true);
+                const response = await api.get('/students/filling-status');
+                setData(response.data);
+
+                const updateResponse = await api.get('/students/last-updated');
+                setLastUpdate(updateResponse.data.lastModified);
             } catch (error) {
                 console.error('Error fetching data:', error);
+                setError(error.message);
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
     }, []);
 
-    if (!data.length) {
+    if (loading) {
         return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+    if (!data.length) {
+        return <div>No data available</div>;
     }
 
     return (
@@ -30,7 +48,7 @@ const FillingStatus = () => {
                     Filling Status
                 </h2>
                 <p className="text-gray-600 mt-1">
-                    Last updated: {new Date().toLocaleDateString()}
+                    Last updated: {lastUpdate || new Date().toLocaleDateString()}
                 </p>
                 <p className="text-gray-500 mt-2">
                     Distribution of fast and slow filling colleges

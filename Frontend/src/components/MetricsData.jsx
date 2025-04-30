@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MetricCard from './MetricCard';
 import { Zap, Lightbulb, AlertCircle, Bike } from 'lucide-react';
+import api from '../utils/api';
 
 const MetricsData = () => {
     const [metrics, setMetrics] = useState({
@@ -14,23 +15,23 @@ const MetricsData = () => {
         const fetchMetrics = async () => {
             try {
                 // Fetch fast filling colleges
-                const fillingResponse = await fetch('http://localhost:5000/students/filling-status');
-                const fillingData = await fillingResponse.json();
+                const fillingResponse = await api.get('/students/filling-status');
+                const fillingData = fillingResponse.data;
                 const fastFillingCount = fillingData.find(d => d.type === "Fast Filling")?.count || 0;
 
                 // Fetch total girls
-                const girlsResponse = await fetch('http://localhost:5000/students/girls');
-                const girlsData = await girlsResponse.json();
+                const girlsResponse = await api.get('/students/girls');
+                const girlsData = girlsResponse.data;
                 const totalGirls = Object.values(girlsData).reduce((sum, count) => sum + count, 0);
 
                 // Fetch semester fee paid students
-                const semFeeResponse = await fetch('http://localhost:5000/students/sem-fee-paid');
-                const semFeeData = await semFeeResponse.json();
+                const semFeeResponse = await api.get('/students/sem-fee-paid');
+                const semFeeData = semFeeResponse.data;
                 const semFeePaid = semFeeData.reduce((sum, item) => sum + item.fees, 0);
 
                 // Fetch withdrawn students
-                const withdrawnResponse = await fetch('http://localhost:5000/students/withdrawals');
-                const withdrawnData = await withdrawnResponse.json();
+                const withdrawnResponse = await api.get('/students/withdrawals');
+                const withdrawnData = withdrawnResponse.data;
                 const withdrawn = withdrawnData.reduce((sum, item) => sum + item.count, 0);
 
                 setMetrics({

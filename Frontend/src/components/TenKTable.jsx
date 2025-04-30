@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/TenKTable.css';
 import AutoCompleteSearch from './AutoCompleteSearch';
+import api from '../utils/api';
 
 const formatDate = (dateString) => {
   if (!dateString || dateString === '-') return '-';
@@ -32,23 +33,22 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
     const fetchData = async () => {
       try {
         // Fetch students data
-        const studentsResponse = await fetch('http://localhost:5000/students/tenk-fees');
-        if (!studentsResponse.ok) {
+        const studentsResponse = await api.get('/students/tenk-fees');
+        if (!studentsResponse.data) {
           throw new Error('Failed to fetch data');
         }
-        const studentsData = await studentsResponse.json();
+        const studentsData = studentsResponse.data;
         if (!Array.isArray(studentsData)) {
           throw new Error('Invalid data format received');
         }
         setStudents(studentsData);
 
         // Fetch last update time
-        const updateResponse = await fetch('http://localhost:5000/students/last-updated');
-        if (!updateResponse.ok) {
+        const updateResponse = await api.get('/students/last-updated');
+        if (!updateResponse.data) {
           throw new Error('Failed to fetch last update time');
         }
-        const updateData = await updateResponse.json();
-        setLastUpdate(updateData.lastModified);
+        setLastUpdate(updateResponse.data.lastModified);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error.message);

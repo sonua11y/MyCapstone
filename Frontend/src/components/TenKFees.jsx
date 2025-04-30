@@ -2,23 +2,26 @@ import React from 'react';
 import { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
+import api from '../utils/api';
 
 const TenKFees = () => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch 10k fees data
-                const feesResponse = await fetch("http://localhost:5000/students/tenk-fees");
-                if (!feesResponse.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                const feesData = await feesResponse.json();
+                setLoading(true);
+                // Fetch both data in parallel
+                const [feesResponse, updateResponse] = await Promise.all([
+                    api.get('/students/tenk-fees'),
+                    api.get('/students/last-updated')
+                ]);
                 
-                // Process the data to get counts
+                // Process the fees data to get counts
+                const feesData = feesResponse.data;
                 const paidCount = feesData.filter(student => student.feePaid?.toLowerCase() === 'yes').length;
                 const notPaidCount = feesData.length - paidCount;
                 setData({
@@ -27,21 +30,23 @@ const TenKFees = () => {
                     total: feesData.length
                 });
 
-                // Fetch last update time
-                const updateResponse = await fetch("http://localhost:5000/students/last-updated");
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to fetch last update time');
-                }
-                const updateData = await updateResponse.json();
-                setLastUpdate(updateData.lastModified);
+                setLastUpdate(updateResponse.data.lastModified);
             } catch (error) {
                 console.error("Error fetching data:", error);
                 setError(error.message);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
     }, []);
+
+    if (loading) {
+        return <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="animate-pulse">Loading...</div>
+        </div>;
+    }
 
     if (error) {
         return <div className="bg-white p-4 rounded-lg shadow-md">
@@ -51,7 +56,7 @@ const TenKFees = () => {
 
     if (!data) {
         return <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="animate-pulse">Loading...</div>
+            <div>No data available</div>
         </div>;
     }
 

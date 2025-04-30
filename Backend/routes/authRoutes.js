@@ -9,6 +9,8 @@ const passport = require('passport');
 // Load environment variables
 dotenv.config();
 
+const FRONTEND_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.FRONTEND_URL;
+
 // Debug environment variables
 console.log('Environment variables:', {
   JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
@@ -88,48 +90,28 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  (req, res, next) => {
-    console.log('Google OAuth callback received');
-    passport.authenticate('google', { 
-      failureRedirect: 'http://localhost:3000/login?error=auth_failed',
-      failureMessage: true 
-    })(req, res, next);
-  },
-  (req, res) => {
+  passport.authenticate('google', {
+    failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`,
+    session: false
+  }),
+  async (req, res) => {
     try {
-      console.log('Google authentication successful, user:', req.user);
-      
-      if (!process.env.JWT_SECRET) {
-        console.error('JWT_SECRET is missing in environment variables');
-        return res.redirect('http://localhost:3000/login?error=server_error');
-      }
-
       if (!req.user) {
-        console.error('No user data available after authentication');
-        return res.redirect('http://localhost:3000/login?error=auth_failed');
+        return res.redirect(`${FRONTEND_URL}/login?error=server_error`);
       }
 
-      // Ensure admin status is boolean
-      const isAdmin = req.user.Admins === "admin";
+      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: '24h'
+      });
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { 
-          email: req.user["Email id"],
-          id: req.user._id,
-          admin: isAdmin
-        }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: '1h' }
-      );
-      
-      console.log('JWT token generated successfully');
-      
-      // Redirect with token
-      res.redirect(`http://localhost:3000/auth/success?token=${token}`);
+      if (!token) {
+        return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
+      }
+
+      res.redirect(`${FRONTEND_URL}/auth/success?token=${token}`);
     } catch (error) {
-      console.error('Error in Google callback:', error);
-      res.redirect('http://localhost:3000/login?error=auth_failed');
+      console.error('Auth callback error:', error);
+      res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
     }
   }
 );

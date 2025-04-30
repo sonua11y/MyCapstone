@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { X } from 'lucide-react';
 import SemFeeTable from './SemFeeTable';
 import '../styles/FeeCollectionStatus.css';
+import api from '../utils/api';
 
 const FeeCollectionStatus = ({ onMonthSelect, selectedMonth }) => {
   const [barData, setBarData] = useState([]);
@@ -12,24 +13,32 @@ const FeeCollectionStatus = ({ onMonthSelect, selectedMonth }) => {
   const [totalPending, setTotalPending] = useState(0);
   const [totalStudents, setTotalStudents] = useState(0);
   const [lastUpdate, setLastUpdate] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchFeeCollectionData();
-    fetchTotalStudents();
-    const fetchLastUpdate = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/students/last-updated');
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        const data = await response.json();
-        setLastUpdate(data.lastModified);
+        setLoading(true);
+        const [lastUpdateResponse, studentsResponse] = await Promise.all([
+          api.get('/students/last-updated'),
+          api.get('/students/count')
+        ]);
+        
+        setLastUpdate(lastUpdateResponse.data.lastModified);
+        const studentCount = studentsResponse.data.count;
+        setTotalStudents(studentCount);
+        setTotalPending(studentCount * 350000);
       } catch (error) {
-        console.error('Error fetching last update time:', error);
+        console.error('Error fetching data:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchLastUpdate();
+    fetchData();
+    fetchFeeCollectionData();
   }, []);
 
   useEffect(() => {
@@ -39,22 +48,10 @@ const FeeCollectionStatus = ({ onMonthSelect, selectedMonth }) => {
     ]);
   }, [totalCollected, totalPending]);
 
-  const fetchTotalStudents = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/students/count');
-      const data = await response.json();
-      setTotalStudents(data.count);
-      const totalExpectedFees = data.count * 350000;
-      setTotalPending(totalExpectedFees);
-    } catch (error) {
-      console.error("Error fetching total students:", error);
-    }
-  };
-
   const fetchFeeCollectionData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/students/sem-fee-paid');
-      const data = await response.json();
+      const response = await api.get('/students/sem-fee-paid');
+      const data = response.data;
       const totalFees = data.reduce((sum, item) => sum + (item.fees * 350000), 0);
       setTotalCollected(totalFees);
       const formattedData = data.map(item => ({
@@ -64,6 +61,7 @@ const FeeCollectionStatus = ({ onMonthSelect, selectedMonth }) => {
       setBarData(formattedData);
     } catch (error) {
       console.error("Error fetching fee collection data:", error);
+      setError(error.message);
     }
   };
 

@@ -3,20 +3,38 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/SemFeeTable.css';
 import AutoCompleteSearch from './AutoCompleteSearch';
 import { FaSearch } from 'react-icons/fa';
+import api from '../utils/api';
 
 const SemFeeTable = ({ selectedMonth = null, selectedCollege = null }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [students, setStudents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const itemsPerPage = 10;
   const [searchFields] = useState(['firstName', 'lastName', 'transactionId', 'college']);
   const [lastUpdate, setLastUpdate] = useState('');
 
   useEffect(() => {
-    fetch("http://localhost:5000/students/all")
-      .then((res) => res.json())
-      .then((data) => setStudents(data))
-      .catch((err) => console.error("Error fetching data:", err));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [studentsResponse, updateResponse] = await Promise.all([
+          api.get('/students/all'),
+          api.get('/students/last-updated')
+        ]);
+        
+        setStudents(studentsResponse.data);
+        setLastUpdate(updateResponse.data.lastModified);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const filteredStudents = useMemo(() => {
