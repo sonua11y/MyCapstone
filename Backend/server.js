@@ -226,12 +226,17 @@ app.get('/test-cors-page', (req, res) => {
         <script>
           async function testCors() {
             try {
-              const response = await fetch('https://mycapstone-2.onrender.com/test-cors', {
-                method: 'GET',
+              // Make a request to a different endpoint
+              const response = await fetch('https://mycapstone-2.onrender.com/auth/login', {
+                method: 'POST',
                 credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                  "Email id": "test@example.com",
+                  "Password": "test123"
+                })
               });
               const data = await response.json();
               document.getElementById('result').textContent = JSON.stringify(data, null, 2);
@@ -248,6 +253,30 @@ app.get('/test-cors-page', (req, res) => {
       </body>
     </html>
   `);
+});
+
+// Test CORS headers endpoint
+app.get('/test-cors-headers', (req, res) => {
+  // Set CORS headers manually
+  res.setHeader('Access-Control-Allow-Origin', 'https://studentsadmissiontracker.netlify.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  res.json({
+    message: 'CORS Headers Test',
+    origin: req.headers.origin,
+    headers: req.headers
+  });
+});
+
+// Handle OPTIONS request for CORS
+app.options('/test-cors-headers', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://studentsadmissiontracker.netlify.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.status(204).end();
 });
 
 // Basic error handling
