@@ -31,21 +31,31 @@ let lastModifiedTime = null;
 
 // Check initial file modification time
 try {
-    const stats = fs.statSync(filePath);
-    lastModifiedTime = stats.mtime;
-    console.log('Initial CSV last modified time:', lastModifiedTime);
+    if (fs.existsSync(filePath)) {
+        const stats = fs.statSync(filePath);
+        lastModifiedTime = stats.mtime;
+        console.log('Initial CSV last modified time:', lastModifiedTime);
+    } else {
+        console.log('CSV file not found. Waiting for file to be created...');
+        lastModifiedTime = new Date();
+    }
 } catch (err) {
-    console.log('CSV file not found. Waiting for file to be created...');
+    console.error('Error checking file:', err.message);
     lastModifiedTime = new Date();
 }
 
 // MongoDB Connection (use environment variable)
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://sripranathiindupalli:studentfeetracker@capi.eqhj3yr.mongodb.net/StudentData?retryWrites=true&w=majority&appName=Capi')
+const mongoUri = process.env.MONGO_URI || 'mongodb+srv://sripranathiindupalli:studentfeetracker@capi.eqhj3yr.mongodb.net/StudentData?retryWrites=true&w=majority&appName=Capi';
+
+mongoose.connect(mongoUri)
   .then(() => {
     console.log('MongoDB Connected for CSV Watcher');
     console.log('Using DB:', mongoose.connection.db.databaseName);
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
 
 const importCSV = () => {
   const students = [];
