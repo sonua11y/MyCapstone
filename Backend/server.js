@@ -35,15 +35,29 @@ const contentRoutes = require('./routes/contentRoutes'); // Add this line
 const passport = require('passport');
 const session = require('express-session');
 require('./config/passport');
-const otpRoutes = require('./routes/otpRoutes');
-
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 // Configure CORS to allow requests from your frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://capi-safety.netlify.app',
+  'https://capi-safety.onrender.com'
+];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
@@ -92,7 +106,7 @@ const connectDB = async () => {
 connectDB().then(() => {
   // Start server only after DB connection is established
   app.listen(port, () => {
-    console.log(`Server running on port http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
     console.log('Environment:', process.env.NODE_ENV);
   });
 }).catch(err => {
@@ -100,10 +114,9 @@ connectDB().then(() => {
   process.exit(1);
 });
 
-// **Use Student Routes**
+// **Use Routes**
 app.use('/students', studentRoutes);
 app.use('/auth', authRoutes);
-app.use('/otp', otpRoutes);
 app.use('/content', contentRoutes);
 
 // Routes

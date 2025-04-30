@@ -32,9 +32,9 @@ let lastModifiedTime = null;
 // Check initial file modification time
 try {
     if (fs.existsSync(filePath)) {
-        const stats = fs.statSync(filePath);
-        lastModifiedTime = stats.mtime;
-        console.log('Initial CSV last modified time:', lastModifiedTime);
+    const stats = fs.statSync(filePath);
+    lastModifiedTime = stats.mtime;
+    console.log('Initial CSV last modified time:', lastModifiedTime);
     } else {
         console.log('CSV file not found. Waiting for file to be created...');
         lastModifiedTime = new Date();

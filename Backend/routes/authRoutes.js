@@ -4,7 +4,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const passport = require('passport');
 
 // Load environment variables
@@ -18,55 +18,41 @@ console.log('Environment variables:', {
   SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set'
 });
 
-const otpMap = new Map();
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const email = req.body["Email id"];
+    const password = req.body["Password"];
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ message: 'User not found' });
+    const user = await User.findOne({ "Email id": email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ message: 'Access denied' });
+    // Direct password comparison since they're stored as plain text
+    const validPassword = password === user.Password;
+    if (!validPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-  const otp = generateOTP();
-  const expiresAt = Date.now() + 2 * 60 * 1000;
-  otpMap.set(email, { otp, expiresAt });
+    const token = jwt.sign(
+      { 
+        email: user["Email id"],
+        id: user._id,
+        admin: user.Admins === "admin"
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
 
-  console.log(`OTP for ${email}: ${otp}`);
-  res.status(200).json({ message: 'OTP sent to email' });
-});
-
-router.post('/verify-otp', async (req, res) => {
-  const { email, otp } = req.body;
-  const record = otpMap.get(email);
-
-  if (!record || Date.now() > record.expiresAt || record.otp !== otp) {
-    return res.status(401).json({ message: 'Invalid or expired OTP' });
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
-  const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  otpMap.delete(email);
-
-  res.status(200).json({ token });
-});
-
-router.post('/resend-otp', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-
-  if (!user) return res.status(404).json({ message: 'User not found' });
-
-  const otp = generateOTP();
-  const expiresAt = Date.now() + 2 * 60 * 1000;
-  otpMap.set(email, { otp, expiresAt });
-
-  console.log(`Resent OTP to ${email}: ${otp}`);
-  res.status(200).json({ message: 'OTP resent' });
 });
 
 router.post('/create-admin', async (req, res) => {
@@ -75,13 +61,17 @@ router.post('/create-admin', async (req, res) => {
     return res.status(403).json({ message: 'Forbidden' });
   }
 
-  const { email, password } = req.body;
+  const email = req.body["Email id"];
+  const password = req.body["Password"];
 
-  const existing = await User.findOne({ email });
+  const existing = await User.findOne({ "Email id": email });
   if (existing) return res.status(400).json({ message: 'Admin already exists' });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ email, password: hashedPassword, admin: true });
+  const user = new User({ 
+    "Email id": email, 
+    "Password": password,
+    "Admins": "admin"
+  });
   await user.save();
 
   res.status(201).json({ message: 'Admin created' });
@@ -121,7 +111,7 @@ router.get('/google/callback',
       }
 
       // Ensure admin status is boolean
-      const isAdmin = req.user.Admins === true;
+      const isAdmin = req.user.Admins === "admin";
 
       // Generate JWT token
       const token = jwt.sign(
@@ -144,12 +134,5 @@ router.get('/google/callback',
     }
   }
 );
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [email, { expiresAt }] of otpMap.entries()) {
-    if (now > expiresAt) otpMap.delete(email);
-  }
-}, 60 * 1000);
 
 module.exports = router;

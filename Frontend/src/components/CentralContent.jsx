@@ -367,14 +367,14 @@ const CentralContent = ({ activeSubTab }) => {
                       position: 'absolute',
                       top: '50%',
                       left: '50%',
-                      width: '4px',
-                      height: '120px',
-                      background: '#666',
-                      transformOrigin: 'bottom',
-                      transform: `translateX(-50%) rotate(${
+                      width: '3px',
+                      height: '110px',
+                      background: '#1e293b',
+                      transformOrigin: 'top',
+                      transform: `translate(-50%, 0) rotate(${
                         fillingData.length > 0 
-                          ? -90 + (180 * (fillingData[0]?.count || 0) / (fillingData[0]?.count + fillingData[1]?.count || 1))
-                          : -90
+                          ? 90 + (180 * (fillingData[0]?.count || 0) / (fillingData.reduce((sum, item) => sum + item.count, 0)))
+                          : 90
                       }deg)`
                     }}
                   />
