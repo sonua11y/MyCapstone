@@ -216,6 +216,40 @@ app.get('/students/all', async (req, res) => {
   }
 });
 
+// Test HTML page for CORS
+app.get('/test-cors-page', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>CORS Test Page</title>
+        <script>
+          async function testCors() {
+            try {
+              const response = await fetch('https://mycapstone-2.onrender.com/test-cors', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+              const data = await response.json();
+              document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+              document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+          }
+        </script>
+      </head>
+      <body>
+        <h1>CORS Test Page</h1>
+        <button onclick="testCors()">Test CORS</button>
+        <pre id="result"></pre>
+      </body>
+    </html>
+  `);
+});
+
 // Basic error handling
 app.use((err, req, res, next) => {
   console.error('Error details:', {
