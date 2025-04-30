@@ -10,6 +10,16 @@ console.log('Server startup - Environment variables:', {
   MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set'
 });
 
+// Load watcher only in development environment
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('./watcher');
+    console.log('CSV Watcher started in development mode');
+  } catch (error) {
+    console.log('CSV Watcher not loaded (development only feature)');
+  }
+}
+
 // If JWT_SECRET is not set, use a fallback (only for development)
 if (!process.env.JWT_SECRET) {
   console.warn('WARNING: JWT_SECRET not set in .env file. Using development fallback.');
