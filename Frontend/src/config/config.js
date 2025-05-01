@@ -3,12 +3,8 @@ const environments = {
         apiUrl: 'http://localhost:5000',
         env: 'development'
     },
-    uat: {
-        apiUrl: 'https://uat-api-capisafety.onrender.com',
-        env: 'uat'
-    },
     production: {
-        apiUrl: 'https://api.capisafety.com',
+        apiUrl: 'https://mycapstone-2.onrender.com',
         env: 'production'
     }
 };
@@ -16,14 +12,10 @@ const environments = {
 const getCurrentEnvironment = () => {
     // Check for environment-specific URL patterns
     const hostname = window.location.hostname;
-    if (hostname.includes('uat') || hostname.includes('deploy-preview')) {
-        return environments.uat;
-    } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return environments.development;
-    } else if (hostname.includes('capisafety.com')) {
-        return environments.production;
     }
-    return environments.development; // Default to development
+    return environments.production; // Default to production for all other cases
 };
 
 const currentEnv = getCurrentEnvironment();
@@ -37,22 +29,20 @@ export const config = {
         googleCallback: `${currentEnv.apiUrl}/auth/google/callback`
     },
     isProduction: currentEnv.env === 'production',
-    isUAT: currentEnv.env === 'uat',
     isDevelopment: currentEnv.env === 'development'
 };
 
-// Add visual indicator for non-production environments
-if (!config.isProduction) {
+// Add visual indicator for development environment
+if (config.isDevelopment) {
     const style = document.createElement('style');
-    const color = config.isUAT ? '#ff9800' : '#4caf50';
     style.textContent = `
         body::before {
-            content: '${config.env.toUpperCase()} ENVIRONMENT';
+            content: 'DEVELOPMENT';
             position: fixed;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            background: ${color};
+            background: #4caf50;
             color: white;
             padding: 4px 8px;
             font-size: 12px;
