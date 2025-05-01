@@ -15,7 +15,7 @@ const getCurrentEnvironment = () => {
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return environments.development;
     }
-    return environments.production; // Default to production for all other cases
+    return environments.production;
 };
 
 const currentEnv = getCurrentEnvironment();
@@ -26,7 +26,10 @@ export const config = {
     auth: {
         login: `${currentEnv.apiUrl}/auth/login`,
         google: `${currentEnv.apiUrl}/auth/google`,
-        googleCallback: `${currentEnv.apiUrl}/auth/google/callback`
+        googleCallback: `${currentEnv.apiUrl}/auth/google/callback`,
+        successRedirect: currentEnv.env === 'development' 
+            ? 'http://localhost:3000/auth/success'
+            : 'https://deployadmissiontracker.netlify.app/auth/success'
     },
     isProduction: currentEnv.env === 'production',
     isDevelopment: currentEnv.env === 'development'

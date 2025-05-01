@@ -185,13 +185,6 @@ const Login = () => {
               Login
             </button>
 
-            <div className="forgot-password">
-              Forgot your password?{' '}
-              <a href="/reset-password" className="reset-link">
-                Reset Password
-              </a>
-            </div>
-
           <div className="or-divider">
             <span>OR</span>
           </div>

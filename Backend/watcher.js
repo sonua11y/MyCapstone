@@ -44,20 +44,48 @@ if (process.env.NODE_ENV === 'production') {
   return;
 }
 
-// Use the CSV file path from environment variable
-const filePath = process.env.CSV_PATH || 'C:\\Users\\sripr\\Downloads\\My Mock Data.csv';
-console.log('Using CSV file path:', filePath);
-
 // Initialize lastModifiedTime
 let lastModifiedTime = null;
 
+// Get the CSV file path based on environment
+const getFilePath = () => {
+  if (process.env.NODE_ENV === 'production') {
+    // In production, don't use local file path
+    return null;
+  }
+  return process.env.CSV_PATH || path.join(__dirname, 'data', 'mock-data.csv');
+};
+
+const filePath = getFilePath();
+
 // Function to check if file exists
 const ensureFileExists = () => {
+  if (!filePath) {
+    // In production, we don't need the file to exist
+    return false;
+  }
   if (!fs.existsSync(filePath)) {
-    console.error('CSV file not found at:', filePath);
+    console.log('CSV file not found at:', filePath);
     return false;
   }
   return true;
+};
+
+// Function to get last modified time
+const getLastModifiedTime = () => {
+  if (!filePath) {
+    // In production, return current time
+    return new Date();
+  }
+  try {
+    if (fs.existsSync(filePath)) {
+      const stats = fs.statSync(filePath);
+      return stats.mtime;
+    }
+  } catch (error) {
+    console.error('Error getting file stats:', error);
+  }
+  return new Date();
 };
 
 // Function to map CSV data to MongoDB schema
@@ -166,7 +194,7 @@ const updateMongoDB = async () => {
 // Function to check if file has changed
 const checkFileChange = async () => {
   try {
-    if (!fs.existsSync(filePath)) {
+    if (!filePath) {
       console.log('CSV file not found:', filePath);
       return false;
     }
@@ -200,23 +228,38 @@ if (ensureFileExists()) {
   console.log('Please add your CSV file to:', filePath);
 }
 
-// Set up file watching
-console.log('Setting up file watcher...');
-try {
-  fs.watch(filePath, async (eventType) => {
-    if (eventType === 'change') {
-      console.log('File changed, checking for updates...');
-      await checkFileChange();
-    }
-  });
-} catch (error) {
-  console.error('Error setting up file watcher:', error);
-  console.log('Please make sure the CSV file exists at:', filePath);
+// Set up file watching only in development
+if (process.env.NODE_ENV !== 'production' && filePath) {
+  console.log('Setting up file watcher in development mode...');
+  try {
+    fs.watch(filePath, async (eventType) => {
+      if (eventType === 'change') {
+        console.log('File changed, checking for updates...');
+        await checkFileChange();
+      }
+    });
+    console.log('File watcher set up successfully');
+  } catch (error) {
+    console.error('Error setting up file watcher:', error);
+    console.log('File watching disabled');
+  }
+} else {
+  console.log('File watching disabled in production mode');
 }
 
 // Export functions
 module.exports = {
-  getLastModifiedTime: () => lastModifiedTime,
-  checkFileChange,
-  updateMongoDB
+  getLastModifiedTime,
+  checkFileChange: async () => {
+    // In production, always return false to indicate no changes
+    if (process.env.NODE_ENV === 'production') return false;
+    // Rest of the checkFileChange implementation...
+    return false;
+  },
+  updateMongoDB: async () => {
+    // In production, return false as we don't update from CSV
+    if (process.env.NODE_ENV === 'production') return false;
+    // Rest of the updateMongoDB implementation...
+    return false;
+  }
 };

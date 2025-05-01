@@ -7,17 +7,18 @@ console.log('Server startup - Environment variables:', {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
   SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set',
-  MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set'
+  MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set',
+  NODE_ENV: process.env.NODE_ENV || 'development'
 });
 
-// Force development mode when running locally
-process.env.NODE_ENV = 'development';
-console.log('Running in development mode');
+// Set environment based on NODE_ENV
+const isProduction = process.env.NODE_ENV === 'production';
+console.log(`Running in ${isProduction ? 'production' : 'development'} mode`);
 
 // Load watcher in development environment
 try {
   require('./watcher');
-  console.log('CSV Watcher started in development mode');
+  console.log('CSV Watcher initialized');
 } catch (error) {
   console.error('Error loading CSV Watcher:', error);
 }

@@ -9,10 +9,14 @@ const passport = require('passport');
 // Load environment variables
 dotenv.config();
 
-const FRONTEND_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.FRONTEND_URL;
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+    ? 'https://deployadmissiontracker.netlify.app'
+    : 'http://localhost:3000';
 
 // Debug environment variables
-console.log('Environment variables:', {
+console.log('Auth Routes Configuration:', {
+  frontendUrl: FRONTEND_URL,
+  environment: process.env.NODE_ENV,
   JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
@@ -83,6 +87,7 @@ router.post('/create-admin', async (req, res) => {
 router.get('/google',
   (req, res, next) => {
     console.log('Initiating Google OAuth...');
+    console.log('Current environment:', process.env.NODE_ENV);
     passport.authenticate('google', { 
       scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
       prompt: 'select_account',
@@ -93,13 +98,16 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-    passport.authenticate('google', { 
+  passport.authenticate('google', { 
     failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`,
     session: false
   }),
   async (req, res) => {
     try {
+      console.log('Google callback received');
+      
       if (!req.user) {
+        console.error('No user data in callback');
         return res.redirect(`${FRONTEND_URL}/login?error=server_error`);
       }
 
@@ -113,9 +121,11 @@ router.get('/google/callback',
       });
 
       if (!token) {
+        console.error('Failed to generate token');
         return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
       }
 
+      console.log('Auth successful, redirecting to:', `${FRONTEND_URL}/auth/success?token=${token}`);
       res.redirect(`${FRONTEND_URL}/auth/success?token=${token}`);
     } catch (error) {
       console.error('Auth callback error:', error);

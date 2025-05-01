@@ -3,7 +3,19 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 require('dotenv').config();
 
-const BACKEND_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : process.env.BACKEND_URL;
+const BACKEND_URL = process.env.NODE_ENV === 'production' 
+    ? 'https://mycapstone-3.onrender.com'
+    : 'http://localhost:5000';
+
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+    ? 'https://deployadmissiontracker.netlify.app'
+    : 'http://localhost:3000';
+
+console.log('OAuth Configuration:', {
+    backendUrl: BACKEND_URL,
+    frontendUrl: FRONTEND_URL,
+    environment: process.env.NODE_ENV
+});
 
 passport.use(
     new GoogleStrategy(
