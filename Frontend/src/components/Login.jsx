@@ -62,16 +62,15 @@ const Login = () => {
     setError('');
     setValidationErrors({ email: '', password: '' });
 
-    // For testing: If both fields are empty, proceed to dashboard
     if (!email && !password) {
-      localStorage.setItem('token', 'test-token');
-      // Set some test user data
       const testUserData = {
         "Email id": "test@example.com",
         name: "Test User",
         Admins: "admin",
-        lastLogin: new Date().toLocaleString()
+        lastLogin: new Date().toLocaleString(),
+        email: "test@example.com" // Adding email explicitly
       };
+      localStorage.setItem('token', 'test-token');
       localStorage.setItem('userData', JSON.stringify(testUserData));
       navigate('/dashboard');
       return;
@@ -83,7 +82,6 @@ const Login = () => {
       return;
     }
     
-    // Normal authentication flow if both fields have data
     try {
       const response = await fetch(config.auth.login, {
         method: 'POST',
@@ -92,14 +90,23 @@ const Login = () => {
         },
         body: JSON.stringify({
           "Email id": email,
-          "Password": password
+          "Password": password,
+          email: email // Adding email explicitly
         })
       });
       
       const data = await response.json();
       
       if (response.ok) {
+        // Store user data including email
+        const userData = {
+          ...data.user,
+          email: email,
+          "Email id": email,
+          lastLogin: new Date().toLocaleString()
+        };
         localStorage.setItem('token', data.token);
+        localStorage.setItem('userData', JSON.stringify(userData));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Invalid credentials');
@@ -111,6 +118,9 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
+    // Clear any existing user data before Google login
+    localStorage.removeItem('userData');
+    localStorage.removeItem('token');
     window.location.href = config.auth.google;
   };
 

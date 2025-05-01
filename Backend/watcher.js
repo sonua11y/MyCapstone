@@ -232,12 +232,12 @@ if (ensureFileExists()) {
 if (process.env.NODE_ENV !== 'production' && filePath) {
   console.log('Setting up file watcher in development mode...');
   try {
-    fs.watch(filePath, async (eventType) => {
-      if (eventType === 'change') {
-        console.log('File changed, checking for updates...');
-        await checkFileChange();
-      }
-    });
+fs.watch(filePath, async (eventType) => {
+  if (eventType === 'change') {
+    console.log('File changed, checking for updates...');
+    await checkFileChange();
+  }
+});
     console.log('File watcher set up successfully');
   } catch (error) {
     console.error('Error setting up file watcher:', error);

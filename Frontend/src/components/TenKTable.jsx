@@ -51,7 +51,7 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
         setStudents(studentsData);
 
         if (updateResponse.data && updateResponse.data.lastModified) {
-          setLastUpdate(updateResponse.data.lastModified);
+        setLastUpdate(updateResponse.data.lastModified);
         }
       } catch (error) {
         console.error('Error fetching data:', error);

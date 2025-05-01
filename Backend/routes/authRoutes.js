@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
     const validPassword = password === user.Password;
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
-    }
+  }
 
     const token = jwt.sign(
       { 
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({ token });
+  res.status(200).json({ token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -110,7 +110,7 @@ router.get('/google/callback',
     });
     next();
   },
-  passport.authenticate('google', { 
+    passport.authenticate('google', { 
     failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`,
     session: false
   }),

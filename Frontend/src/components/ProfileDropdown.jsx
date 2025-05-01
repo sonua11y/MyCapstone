@@ -8,6 +8,12 @@ import '../styles/ProfileDropdown.css';
 const ProfileDropdown = ({ user }) => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
+  // Get user data from localStorage if not provided through props
+  const userData = user || JSON.parse(localStorage.getItem('userData')) || {};
+  
+  // Get email from either source
+  const userEmail = userData?.email || userData?.["Email id"] || 'No email available';
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
@@ -36,9 +42,6 @@ const ProfileDropdown = ({ user }) => {
     return `${formattedDate} ${hours}:${minutes}`;
   };
 
-  // Get user data from localStorage if not provided through props
-  const userData = user || JSON.parse(localStorage.getItem('userData')) || {};
-
   return (
     <>
       <Popover>
@@ -61,9 +64,15 @@ const ProfileDropdown = ({ user }) => {
               )}
             </div>
             <div className="profile-info">
-              <h3 className="profile-name">{userData?.name || userData?.["Email id"]?.split('@')[0] || 'User'}</h3>
-              <p className="profile-email">{userData?.["Email id"] || userData?.email || 'No email available'}</p>
-              <p className="profile-role">{userData?.Admins === true || userData?.Admins === "admin" ? 'Admin' : ''}</p>
+              <h3 className="profile-name">
+                {userData?.name || userEmail.split('@')[0] || 'User'}
+              </h3>
+              <p className="profile-email" title={userEmail}>
+                {userEmail}
+              </p>
+              <p className="profile-role">
+                {userData?.Admins === true || userData?.Admins === "admin" ? 'Admin' : ''}
+              </p>
             </div>
           </div>
           

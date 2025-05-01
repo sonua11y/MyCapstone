@@ -19,12 +19,23 @@ const AuthSuccess = () => {
                 const decoded = jwtDecode(token);
                 const userData = {
                     "Email id": decoded.email,
+                    email: decoded.email, // Store email in both formats
                     name: decoded.name,
-                    lastLogin: new Date().toLocaleString()
+                    lastLogin: new Date().toLocaleString(),
+                    Admins: decoded.admin // Store admin status if available
                 };
                 localStorage.setItem('userData', JSON.stringify(userData));
+                console.log('Stored user data:', userData); // For debugging
             } catch (error) {
                 console.error('Error decoding token:', error);
+                // Store minimal user data if token decode fails
+                const fallbackData = {
+                    "Email id": "user@example.com",
+                    email: "user@example.com",
+                    name: "User",
+                    lastLogin: new Date().toLocaleString()
+                };
+                localStorage.setItem('userData', JSON.stringify(fallbackData));
             }
 
             // Redirect to dashboard
@@ -40,8 +51,11 @@ const AuthSuccess = () => {
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center', 
-            height: '100vh' 
+            height: '100vh',
+            flexDirection: 'column',
+            gap: '1rem'
         }}>
+            <div className="loading-spinner"></div>
             <div>Authenticating...</div>
         </div>
     );
