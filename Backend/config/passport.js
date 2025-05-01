@@ -3,16 +3,20 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 require('dotenv').config();
 
-const BACKEND_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://mycapstone-3.onrender.com'
-    : 'http://localhost:5000';
+// Get the callback URL based on environment
+const getCallbackURL = () => {
+    if (process.env.NODE_ENV === 'production') {
+        return 'https://mycapstone-3.onrender.com/auth/google/callback';
+    }
+    return 'http://localhost:5000/auth/google/callback';
+};
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
     ? 'https://deployadmissiontracker.netlify.app'
     : 'http://localhost:3000';
 
 console.log('OAuth Configuration:', {
-    backendUrl: BACKEND_URL,
+    callbackUrl: getCallbackURL(),
     frontendUrl: FRONTEND_URL,
     environment: process.env.NODE_ENV
 });
@@ -22,9 +26,8 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: `${BACKEND_URL}/auth/google/callback`,
-            passReqToCallback: true,
-            proxy: true
+            callbackURL: getCallbackURL(),
+            passReqToCallback: true
         },
         async function(req, accessToken, refreshToken, profile, done) {
             try {

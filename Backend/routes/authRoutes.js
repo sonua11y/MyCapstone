@@ -13,14 +13,14 @@ const FRONTEND_URL = process.env.NODE_ENV === 'production'
     ? 'https://deployadmissiontracker.netlify.app'
     : 'http://localhost:3000';
 
-// Debug environment variables
+// Debug environment variables and configuration
 console.log('Auth Routes Configuration:', {
   frontendUrl: FRONTEND_URL,
   environment: process.env.NODE_ENV,
-  JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
-  SESSION_SECRET: process.env.SESSION_SECRET ? 'Set' : 'Not set'
+  nodeVersion: process.version,
+  currentUrl: process.env.NODE_ENV === 'production' 
+    ? 'https://mycapstone-3.onrender.com' 
+    : 'http://localhost:5000'
 });
 
 router.post('/login', async (req, res) => {
@@ -86,8 +86,12 @@ router.post('/create-admin', async (req, res) => {
 // Google OAuth Routes
 router.get('/google',
   (req, res, next) => {
-    console.log('Initiating Google OAuth...');
-    console.log('Current environment:', process.env.NODE_ENV);
+    console.log('Initiating Google OAuth...', {
+      environment: process.env.NODE_ENV,
+      headers: req.headers,
+      originalUrl: req.originalUrl
+    });
+    
     passport.authenticate('google', { 
       scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
       prompt: 'select_account',
@@ -98,13 +102,21 @@ router.get('/google',
 );
 
 router.get('/google/callback',
+  (req, res, next) => {
+    console.log('Received callback request:', {
+      query: req.query,
+      headers: req.headers,
+      originalUrl: req.originalUrl
+    });
+    next();
+  },
   passport.authenticate('google', { 
     failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`,
     session: false
   }),
   async (req, res) => {
     try {
-      console.log('Google callback received');
+      console.log('Google callback authentication successful');
       
       if (!req.user) {
         console.error('No user data in callback');
@@ -125,8 +137,9 @@ router.get('/google/callback',
         return res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
       }
 
-      console.log('Auth successful, redirecting to:', `${FRONTEND_URL}/auth/success?token=${token}`);
-      res.redirect(`${FRONTEND_URL}/auth/success?token=${token}`);
+      const redirectUrl = `${FRONTEND_URL}/auth/success?token=${token}`;
+      console.log('Auth successful, redirecting to:', redirectUrl);
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error('Auth callback error:', error);
       res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
