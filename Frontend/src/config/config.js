@@ -4,7 +4,7 @@ const environments = {
         env: 'development'
     },
     uat: {
-        apiUrl: 'https://uat-api.capisafety.com',
+        apiUrl: 'https://uat-api-capisafety.onrender.com',
         env: 'uat'
     },
     production: {
@@ -16,7 +16,7 @@ const environments = {
 const getCurrentEnvironment = () => {
     // Check for environment-specific URL patterns
     const hostname = window.location.hostname;
-    if (hostname.includes('uat')) {
+    if (hostname.includes('uat') || hostname.includes('deploy-preview')) {
         return environments.uat;
     } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return environments.development;
