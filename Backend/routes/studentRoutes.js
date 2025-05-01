@@ -7,7 +7,10 @@ const router = express.Router();
 router.get('/last-updated', (req, res) => {
     const lastModified = getLastModifiedTime();
     if (!lastModified) {
-        return res.status(404).json({ message: 'CSV not updated yet.' });
+        // If no last modified time, use current time as fallback
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-GB');
+        return res.json({ lastModified: formattedDate });
     }
     // Format the date to dd-mm-yyyy
     const date = new Date(lastModified);

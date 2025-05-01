@@ -65,13 +65,11 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
   }, []);
 
   useEffect(() => {
-    // Fetch last update time
     const fetchLastUpdateTime = async () => {
       try {
-        const response = await fetch(`${config.apiUrl}/api/last-update`);
-        const data = await response.json();
-        if (data.lastUpdatedAt) {
-          setLastUpdateTime(new Date(data.lastUpdatedAt));
+        const response = await api.get('/students/last-updated');
+        if (response.data && response.data.lastModified) {
+          setLastUpdateTime(response.data.lastModified);
         }
       } catch (error) {
         console.error('Error fetching last update time:', error);

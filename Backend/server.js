@@ -169,6 +169,28 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Add last-update endpoint
+app.get('/api/last-update', (req, res) => {
+  const filePath = process.env.CSV_PATH;
+  try {
+    if (fs.existsSync(filePath)) {
+      const stats = fs.statSync(filePath);
+      res.json({
+        lastModified: stats.mtime.toLocaleDateString('en-GB')
+      });
+    } else {
+      res.status(404).json({
+        message: 'CSV file not found'
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'Error checking file',
+      error: err.message
+    });
+  }
+});
+
 // **MongoDB Connection**
 const connectDB = async () => {
   try {
