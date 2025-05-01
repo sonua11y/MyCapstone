@@ -1,6 +1,19 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
+  uploadDate: {
+    type: String,
+    required: true
+  },
+  dateOfPayment: {
+    type: String,
+    required: true
+  },
+  transactionId: {
+    type: String,
+    required: true,
+    index: { unique: true, sparse: true }
+  },
   firstName: {
     type: String,
     required: true
@@ -13,11 +26,6 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  transactionId: {
-    type: String,
-    required: true,
-    unique: true
-  },
   feePaid: {
     type: String,
     enum: ['Yes', 'No'],
@@ -28,18 +36,18 @@ const studentSchema = new mongoose.Schema({
     enum: ['Yes', 'No'],
     required: true
   },
-  uploadDate: {
-    type: String,
-    required: true
+  gender: {
+    type: String
   },
-  dateOfPayment: {
-    type: String,
-    required: true
+  fees: {
+    type: String
   },
-    gender: String,
-    fees: Number,
-    year: Number,
-    withdrawal: String
+  year: {
+    type: Number
+  },
+  withdrawal: {
+    type: String
+  }
 }, {
   timestamps: true
 });

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/TenKTable.css';
 import AutoCompleteSearch from './AutoCompleteSearch';
 import api from '../utils/api';
+import config from '../config/config';
 
 const formatDate = (dateString) => {
   if (!dateString || dateString === '-') return '-';
@@ -27,13 +28,19 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchFields] = useState(['firstName', 'lastName', 'transactionId', 'college']);
   const [lastUpdate, setLastUpdate] = useState('');
+  const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch students data
-        const studentsResponse = await api.get('/students/tenk-fees');
+        setLoading(true);
+        // Fetch both data in parallel
+        const [studentsResponse, updateResponse] = await Promise.all([
+          api.get('/students/tenk-fees'),
+          api.get('/students/last-updated')
+        ]);
+        
         if (!studentsResponse.data) {
           throw new Error('Failed to fetch data');
         }
@@ -43,12 +50,9 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
         }
         setStudents(studentsData);
 
-        // Fetch last update time
-        const updateResponse = await api.get('/students/last-updated');
-        if (!updateResponse.data) {
-          throw new Error('Failed to fetch last update time');
+        if (updateResponse.data && updateResponse.data.lastModified) {
+          setLastUpdate(updateResponse.data.lastModified);
         }
-        setLastUpdate(updateResponse.data.lastModified);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error.message);
@@ -58,6 +62,23 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    // Fetch last update time
+    const fetchLastUpdateTime = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/api/last-update`);
+        const data = await response.json();
+        if (data.lastUpdatedAt) {
+          setLastUpdateTime(new Date(data.lastUpdatedAt));
+        }
+      } catch (error) {
+        console.error('Error fetching last update time:', error);
+      }
+    };
+
+    fetchLastUpdateTime();
   }, []);
 
   const filteredStudents = useMemo(() => {
@@ -132,9 +153,17 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
   return (
     <div className="tenk-table-wrapper">
       <div className="tenk-table-header">
-        <h2 className="tenk-table-title">Student Records - 10K Paid</h2>
-        <p className="tenk-table-date">Last updated: {lastUpdate}</p>
-
+        <div className="tenk-table-title-section">
+          <h2 className="tenk-table-title">
+            Student Records - 10K Paid
+            {selectedCollege && <span> - {selectedCollege}</span>}
+          </h2>
+          {lastUpdate && (
+            <p className="tenk-table-date">
+              Last updated: {lastUpdate}
+            </p>
+          )}
+        </div>
         <div className="tenk-table-search">
           <AutoCompleteSearch
             onSearch={handleSearch}

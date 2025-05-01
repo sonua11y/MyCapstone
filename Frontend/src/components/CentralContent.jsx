@@ -248,7 +248,7 @@ const CentralContent = ({ activeSubTab }) => {
                       tick={{ fontSize: 12 }}
                     />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip cursor={false} />
                     <Bar dataKey="value" fill="#8884d8">
                       {waterfallData.map((entry, index) => (
                         <Cell 
@@ -286,7 +286,7 @@ const CentralContent = ({ activeSubTab }) => {
                         tickCount={11}
                       />
                       <YAxis type="category" dataKey="college" width={150} tick={{ fontSize: 12 }} />
-                      <Tooltip />
+                      <Tooltip cursor={false} />
                       <Bar dataKey="count" fill="#8884d8">
                         {femaleData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill="#e3d1f4" />

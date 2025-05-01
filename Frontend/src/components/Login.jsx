@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Login.css';
 import { FcGoogle } from 'react-icons/fc';
+import { Eye, EyeOff } from 'lucide-react';
 import loginLogo from '../assets/login logo.png';
 import config from '../config/config';
 
@@ -9,6 +10,11 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    email: '',
+    password: ''
+  });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -30,10 +36,54 @@ const Login = () => {
     }
   }, [searchParams]);
 
+  const validateForm = () => {
+    const errors = {
+      email: '',
+      password: ''
+    };
+    let isValid = true;
+
+    if (!email) {
+      errors.email = 'Please enter your email';
+      isValid = false;
+    }
+
+    if (!password) {
+      errors.password = 'Please enter your password';
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setValidationErrors({ email: '', password: '' });
+
+    // For testing: If both fields are empty, proceed to dashboard
+    if (!email && !password) {
+      localStorage.setItem('token', 'test-token');
+      // Set some test user data
+      const testUserData = {
+        "Email id": "test@example.com",
+        name: "Test User",
+        Admins: "admin",
+        lastLogin: new Date().toLocaleString()
+      };
+      localStorage.setItem('userData', JSON.stringify(testUserData));
+      navigate('/dashboard');
+      return;
+    }
+
+    // If at least one field has data, validate normally
+    if ((email && !password) || (!email && password)) {
+      validateForm();
+      return;
+    }
     
+    // Normal authentication flow if both fields have data
     try {
       const response = await fetch(config.auth.login, {
         method: 'POST',
@@ -64,6 +114,10 @@ const Login = () => {
     window.location.href = config.auth.google;
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <>
       <div className="login-container">
@@ -76,41 +130,67 @@ const Login = () => {
           
           {error && <div className="error-message">{error}</div>}
           
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="login-form" noValidate>
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (validationErrors.email) {
+                    setValidationErrors(prev => ({ ...prev, email: '' }));
+                  }
+                }}
+                className={validationErrors.email ? 'error' : ''}
                 placeholder="Enter your email"
               />
+              {validationErrors.email && (
+                <div className="field-error">{validationErrors.email}</div>
+              )}
             </div>
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
+              <div className="password-input-container">
               <input
-                type="password"
+                  type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (validationErrors.password) {
+                      setValidationErrors(prev => ({ ...prev, password: '' }));
+                    }
+                  }}
+                  className={validationErrors.password ? 'error' : ''}
                 placeholder="Enter your password"
               />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {validationErrors.password && (
+                <div className="field-error">{validationErrors.password}</div>
+              )}
             </div>
 
             <button type="submit" className="login-button">
               Login
             </button>
 
-          <div className="forgot-password">
-            Forgot your password?{' '}
-            <a href="/reset-password" className="reset-link">
-              Reset Password
-            </a>
-          </div>
+            <div className="forgot-password">
+              Forgot your password?{' '}
+              <a href="/reset-password" className="reset-link">
+                Reset Password
+              </a>
+            </div>
 
           <div className="or-divider">
             <span>OR</span>

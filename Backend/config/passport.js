@@ -11,7 +11,8 @@ passport.use(
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: `${BACKEND_URL}/auth/google/callback`,
-            passReqToCallback: true
+            passReqToCallback: true,
+            proxy: true
         },
         async function(req, accessToken, refreshToken, profile, done) {
             try {
@@ -36,21 +37,25 @@ passport.use(
                     user = await User.create({
                         "Email id": profile.emails[0].value,
                         googleId: profile.id,
+                        name: profile.displayName,
                         Admins: false // Set default role as boolean
                     });
                     console.log('New user created:', {
                         id: user._id,
                         email: user["Email id"],
+                        name: user.name,
                         admin: user.Admins
                     });
                 } else {
                     console.log('User found:', {
                         id: user._id,
                         email: user["Email id"],
+                        name: user.name,
                         admin: user.Admins
                     });
                     if (!user.googleId) {
                         user.googleId = profile.id;
+                        user.name = profile.displayName;
                         // Ensure Admins is boolean
                         if (typeof user.Admins !== 'boolean') {
                             user.Admins = false;

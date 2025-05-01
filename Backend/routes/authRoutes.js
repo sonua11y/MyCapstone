@@ -37,19 +37,20 @@ router.post('/login', async (req, res) => {
     const validPassword = password === user.Password;
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
-  }
+    }
 
     const token = jwt.sign(
       { 
         email: user["Email id"],
         id: user._id,
+        name: user.name || email.split('@')[0], // Use name if exists, otherwise use part before @
         admin: user.Admins === "admin"
       }, 
       process.env.JWT_SECRET, 
       { expiresIn: '1h' }
     );
 
-  res.status(200).json({ token });
+    res.status(200).json({ token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -83,8 +84,10 @@ router.get('/google',
   (req, res, next) => {
     console.log('Initiating Google OAuth...');
     passport.authenticate('google', { 
-      scope: ['profile', 'email'],
-      prompt: 'select_account'
+      scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
+      prompt: 'select_account',
+      accessType: 'offline',
+      includeGrantedScopes: true
     })(req, res, next);
   }
 );
@@ -100,7 +103,12 @@ router.get('/google/callback',
         return res.redirect(`${FRONTEND_URL}/login?error=server_error`);
       }
 
-      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({
+        id: req.user._id,
+        email: req.user["Email id"],
+        name: req.user.name || req.user.displayName,
+        admin: req.user.Admins
+      }, process.env.JWT_SECRET, {
         expiresIn: '24h'
       });
 

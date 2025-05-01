@@ -10,17 +10,25 @@
   position: relative;
 }
 
+.tenk-table-title-section {
+  margin-bottom: 16px;
+}
+
 .tenk-table-title {
   font-size: 20px;
   font-weight: 600;
-  color: #1e293b;
+  color: #000000;
   margin: 0;
+}
+
+.tenk-table-title span {
+  color: #000000;
 }
 
 .tenk-table-date {
   font-size: 14px;
   color: #64748b;
-  margin: 4px 0 16px;
+  margin: 4px 0 0;
 }
 
 .tenk-table-search {
@@ -51,14 +59,14 @@
   background-color: #f8fafc;
   padding: 12px 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: #000000;
   font-size: 14px;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .tenk-table td {
   padding: 12px 16px;
-  color: #475569;
+  color: #000000;
   font-size: 14px;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -199,4 +207,14 @@
 .sem-badge.no {
   background-color: #FEE2E2;
   color: #991B1B;
+}
+
+.last-updated {
+  background-color: #ffd700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-block;
+  margin-left: 16px;
 }

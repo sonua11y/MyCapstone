@@ -15,9 +15,9 @@ const MetricsData = () => {
         const fetchMetrics = async () => {
             try {
                 // Fetch fast filling colleges
-                const fillingResponse = await api.get('/students/filling-status');
+                const fillingResponse = await api.get('/students/fast-slow-filling-colleges');
                 const fillingData = fillingResponse.data;
-                const fastFillingCount = fillingData.find(d => d.type === "Fast Filling")?.count || 0;
+                const fastFillingCount = fillingData.fastFillingColleges.length;
 
                 // Fetch total girls
                 const girlsResponse = await api.get('/students/girls');

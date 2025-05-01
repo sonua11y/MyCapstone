@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true // Allows null values for non-Google users
+    },
+    name: {
+        type: String,
+        required: false
     }
 }, { collection: 'Admin Users' });
 

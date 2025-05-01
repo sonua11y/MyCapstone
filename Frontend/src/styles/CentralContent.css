@@ -90,11 +90,6 @@
   flex: 1 1 calc(50% - 2rem);
   border-radius: 12px;
   padding: 1.5rem;
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center; */
 }
 
 .full-width {
@@ -254,4 +249,13 @@
 .legend-label {
   font-size: 14px;
   color: #666;
+}
+
+/* Remove hover effects on charts */
+.recharts-bar-rectangles:hover {
+  fill-opacity: 1 !important;
+}
+
+.recharts-tooltip-cursor {
+  display: none;
 }

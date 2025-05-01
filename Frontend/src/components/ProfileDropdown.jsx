@@ -36,13 +36,16 @@ const ProfileDropdown = ({ user }) => {
     return `${formattedDate} ${hours}:${minutes}`;
   };
 
+  // Get user data from localStorage if not provided through props
+  const userData = user || JSON.parse(localStorage.getItem('userData')) || {};
+
   return (
     <>
       <Popover>
         <PopoverTrigger asChild>
           <button className="profile-trigger">
-            {user?.profilePicture ? (
-              <img src={user.profilePicture} alt="Profile" className="profile-image" />
+            {userData?.profilePicture ? (
+              <img src={userData.profilePicture} alt="Profile" className="profile-image" />
             ) : (
               <User size={20} color="#fff" />
             )}
@@ -51,23 +54,23 @@ const ProfileDropdown = ({ user }) => {
         <PopoverContent className="profile-dropdown" align="end" sideOffset={10}>
           <div className="profile-header">
             <div className="profile-avatar">
-              {user?.profilePicture ? (
-                <img src={user.profilePicture} alt="Profile" className="profile-image" />
+              {userData?.profilePicture ? (
+                <img src={userData.profilePicture} alt="Profile" className="profile-image" />
               ) : (
                 <User size={24} color="#fff" />
               )}
             </div>
             <div className="profile-info">
-              <h3 className="profile-name">{user?.name || 'Admin User'}</h3>
-              <p className="profile-email">{user?.email || 'admin@example.com'}</p>
-              <p className="profile-role">{user?.role || 'Super Admin'}</p>
+              <h3 className="profile-name">{userData?.name || userData?.["Email id"]?.split('@')[0] || 'User'}</h3>
+              <p className="profile-email">{userData?.["Email id"] || userData?.email || 'No email available'}</p>
+              <p className="profile-role">{userData?.Admins === true || userData?.Admins === "admin" ? 'Admin' : ''}</p>
             </div>
           </div>
           
           <div className="profile-stats">
             <div className="stat-item">
               <span className="stat-label">Last Login</span>
-              <span className="stat-value">{formatLastLogin(user?.lastLogin)}</span>
+              <span className="stat-value">{formatLastLogin(userData?.lastLogin)}</span>
             </div>
           </div>
 
@@ -87,7 +90,7 @@ const ProfileDropdown = ({ user }) => {
       <EditProfile
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
-        user={user}
+        user={userData}
         onSave={handleSaveProfile}
       />
     </>

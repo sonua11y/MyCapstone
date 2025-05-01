@@ -3,6 +3,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const LastUpdate = require('./models/LastUpdate');
 
 // MongoDB Connection
 mongoose.connect('mongodb+srv://sripranathiindupalli:studentfeetracker@capi.eqhj3yr.mongodb.net/StudentData?retryWrites=true&w=majority&appName=Capi')
@@ -26,17 +27,29 @@ async function processCSVFile(filePath) {
                 .on('error', reject);
         });
 
+        let modified = false;
         for (const row of results) {
             const existingUser = await User.findOne({ "Email id": row["Email id"] });
             if (!existingUser) {
                 const user = new User({
                     "Email id": row["Email id"],
-                    "Password": row["Password"], // Store password as plain text
+                    "Password": row["Password"],
                     "Admins": row["Admins"] || "admin"
                 });
                 await user.save();
                 console.log(`Created user: ${row["Email id"]}`);
+                modified = true;
             }
+        }
+
+        // Update last modified time if any changes were made
+        if (modified) {
+            await LastUpdate.findOneAndUpdate(
+                { collectionName: 'Admin Users' },
+                { lastUpdatedAt: new Date() },
+                { upsert: true }
+            );
+            console.log('Updated last modified timestamp');
         }
     } catch (error) {
         console.error('Error processing CSV file:', error);

@@ -10,14 +10,16 @@ console.log('Server startup - Environment variables:', {
   MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set'
 });
 
-// Load watcher only in development environment
-if (process.env.NODE_ENV !== 'production') {
-  try {
-    require('./watcher');
-    console.log('CSV Watcher started in development mode');
-  } catch (error) {
-    console.log('CSV Watcher not loaded (development only feature)');
-  }
+// Force development mode when running locally
+process.env.NODE_ENV = 'development';
+console.log('Running in development mode');
+
+// Load watcher in development environment
+try {
+  require('./watcher');
+  console.log('CSV Watcher started in development mode');
+} catch (error) {
+  console.error('Error loading CSV Watcher:', error);
 }
 
 // If JWT_SECRET is not set, use a fallback (only for development)
@@ -35,14 +37,17 @@ const contentRoutes = require('./routes/contentRoutes'); // Add this line
 const passport = require('passport');
 const session = require('express-session');
 require('./config/passport');
+const fs = require('fs');
+const Student = require('./models/Student'); // Import the Student model with correct casing
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 // CORS Configuration
 const allowedOrigins = [
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studentsadmissiontracker.netlify.app',
-  'https://studentsadmissiontracker.netlify.app'
+  'http://localhost:3000',  // Development
+  'https://studentsadmissiontracker.netlify.app',  // Production
+  'https://mycapstone-2.onrender.com'  // Backend itself
 ];
 
 app.use(cors({
@@ -167,24 +172,32 @@ app.use(passport.session());
 const connectDB = async () => {
   try {
     console.log('Attempting to connect to MongoDB...');
-    console.log('MongoDB URI:', process.env.MONGO_URI ? 'URI is set' : 'URI is missing');
-    await mongoose.connect(process.env.MONGO_URI);
+    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/StudentData';
+    console.log('MongoDB URI:', mongoUri ? 'URI is set' : 'URI is missing');
+    await mongoose.connect(mongoUri);
     console.log('Successfully connected to MongoDB');
   } catch (err) {
     console.error('MongoDB connection error:', err);
-    process.exit(1);
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectDB, 5000);
   }
 };
+
+// Set CSV path for development
+process.env.CSV_PATH = 'C:\\Users\\sripr\\Downloads\\My Mock Data.csv';
+console.log('Using CSV path:', process.env.CSV_PATH);
 
 connectDB().then(() => {
   // Start server only after DB connection is established
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log('Environment:', process.env.NODE_ENV);
+    console.log('CSV Path:', process.env.CSV_PATH);
   });
 }).catch(err => {
   console.error('Failed to connect to MongoDB:', err);
-  process.exit(1);
+  // Don't exit, let the retry mechanism work
+  // process.exit(1);
 });
 
 // **Use Routes**
@@ -195,20 +208,7 @@ app.use('/content', contentRoutes);
 // Routes
 app.get('/students/all', async (req, res) => {
   try {
-    // TODO: Replace with actual database query
-    const students = [
-      {
-        firstName: "John",
-        lastName: "Doe",
-        college: "MIT",
-        transactionId: "12345",
-        feePaid: "Yes",
-        semFee: "Yes",
-        uploadDate: "2024-03-20",
-        dateOfPayment: "2024-03-19"
-      },
-      // Add more sample data or connect to your database
-    ];
+    const students = await Student.find({});
     res.json(students);
   } catch (error) {
     console.error('Error fetching students:', error);
@@ -278,6 +278,43 @@ app.options('/test-cors-headers', (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.status(204).end();
 });
+
+// Test route for file modification time
+app.get('/test-file-time', (req, res) => {
+  const filePath = process.env.CSV_PATH || path.join(__dirname, 'data', 'mock-data.csv');
+  try {
+    if (fs.existsSync(filePath)) {
+      const stats = fs.statSync(filePath);
+      res.json({
+        message: 'File modification time',
+        mtime: stats.mtime,
+        formattedDate: stats.mtime.toLocaleDateString('en-GB'),
+        filePath: filePath
+      });
+    } else {
+      res.status(404).json({
+        message: 'File not found',
+        filePath: filePath
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'Error checking file',
+      error: err.message,
+      filePath: filePath
+    });
+  }
+});
+
+// Configure CSV path for production
+if (process.env.NODE_ENV === 'production') {
+  const csvPath = process.env.CSV_PATH;
+  if (!csvPath) {
+    console.warn('Warning: CSV_PATH environment variable not set in production');
+  } else {
+    console.log('Production CSV path:', csvPath);
+  }
+}
 
 // Basic error handling
 app.use((err, req, res, next) => {
