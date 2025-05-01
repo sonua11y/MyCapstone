@@ -4,7 +4,7 @@ const environments = {
         env: 'development'
     },
     production: {
-        apiUrl: 'https://mycapstone-2.onrender.com',
+        apiUrl: 'https://mycapstone-3.onrender.com',
         env: 'production'
     }
 };

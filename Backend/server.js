@@ -47,7 +47,8 @@ const port = process.env.PORT || 5000;
 const allowedOrigins = [
   'http://localhost:3000',  // Development
   'https://studentsadmissiontracker.netlify.app',  // Production
-  'https://mycapstone-2.onrender.com'  // Backend itself
+  'https://deployadmissiontracker.netlify.app',    // New Netlify domain
+  'https://mycapstone-3.onrender.com'  // Backend itself
 ];
 
 app.use(cors({
