@@ -1,21 +1,55 @@
 const express = require('express');
 const Student = require('../models/Student');
 const { getLastModifiedTime } = require('../watcher');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 
 router.get('/last-updated', (req, res) => {
-    const lastModified = getLastModifiedTime();
-    if (!lastModified) {
-        // If no last modified time, use current time as fallback
+    try {
+        // First try to get the last modified time from the watcher
+        const lastModified = getLastModifiedTime();
+        if (lastModified) {
+            const date = new Date(lastModified);
+            const formattedDate = date.toLocaleDateString('en-GB');
+            return res.json({ 
+                lastModified: formattedDate,
+                source: 'csv_file'
+            });
+        }
+
+        // If watcher fails, try to get the last modified time of the CSV file directly
+        const filePath = process.env.CSV_PATH || path.join(__dirname, '..', 'data', 'mock-data.csv');
+        if (fs.existsSync(filePath)) {
+            const stats = fs.statSync(filePath);
+            const date = new Date(stats.mtime);
+            const formattedDate = date.toLocaleDateString('en-GB');
+            return res.json({ 
+                lastModified: formattedDate,
+                source: 'csv_file'
+            });
+        }
+
+        // If CSV file is not found, use the last update time from MongoDB
         const now = new Date();
         const formattedDate = now.toLocaleDateString('en-GB');
-        return res.json({ lastModified: formattedDate });
+        return res.json({ 
+            lastModified: formattedDate,
+            source: 'mongo_db',
+            message: 'CSV file not found, using current time'
+        });
+    } catch (error) {
+        console.error('Error getting last update time:', error);
+        // If all else fails, use current time
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-GB');
+        return res.json({ 
+            lastModified: formattedDate,
+            source: 'fallback',
+            message: 'Error getting last update time, using current time'
+        });
     }
-    // Format the date to dd-mm-yyyy
-    const date = new Date(lastModified);
-    const formattedDate = date.toLocaleDateString('en-GB');
-    res.json({ lastModified: formattedDate });
 });
 
 // GET all students

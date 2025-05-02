@@ -9,13 +9,19 @@
   color: #666;
 }
 
-.last-updated .label {
+.label {
   font-weight: 500;
 }
 
-.last-updated .date {
+.date {
   color: #1a237e;
   font-weight: 600;
+}
+
+.message {
+  color: #666;
+  font-style: italic;
+  font-size: 12px;
 }
 
 .last-updated.error {
