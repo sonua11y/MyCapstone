@@ -153,7 +153,7 @@ router.get("/withdrawals", async (req, res) => {
         const withdrawalCounts = await Student.aggregate([
             { 
                 $match: { 
-                    'Withdrawal': 'Confirmed'
+                    'Withdrawal': 'Withdrawn'
                 } 
             },
             { 
