@@ -171,22 +171,26 @@ app.use(passport.session());
 
 // Add last-update endpoint
 app.get('/api/last-update', (req, res) => {
-  const filePath = process.env.CSV_PATH;
+  const filePath = process.env.CSV_PATH || path.join(__dirname, 'data', 'mock-data.csv');
   try {
     if (fs.existsSync(filePath)) {
       const stats = fs.statSync(filePath);
       res.json({
-        lastModified: stats.mtime.toLocaleDateString('en-GB')
+        lastModified: stats.mtime.toLocaleDateString('en-GB'),
+        timestamp: stats.mtime.toISOString()
       });
     } else {
       res.status(404).json({
-        message: 'CSV file not found'
+        message: 'CSV file not found',
+        lastModified: new Date().toLocaleDateString('en-GB')
       });
     }
   } catch (err) {
+    console.error('Error checking file:', err);
     res.status(500).json({
       message: 'Error checking file',
-      error: err.message
+      error: err.message,
+      lastModified: new Date().toLocaleDateString('en-GB')
     });
   }
 });

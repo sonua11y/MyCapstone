@@ -5,6 +5,7 @@ import AdmissionChart from '../components/AdmissionChart';
 import TenKTable from '../components/TenKTable';
 import FeeCollectionStatus from '../components/FeeCollectionStatus';
 import CentralContent from '../components/CentralContent';
+import LastUpdated from '../components/LastUpdated';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import '../styles/app.css';
 
@@ -28,6 +29,7 @@ const Index = () => {
       <Header />
       <main className="main-content">
         <MetricsData />
+        <LastUpdated />
         
         <div className="tabs-container">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="tabs-wrapper">
