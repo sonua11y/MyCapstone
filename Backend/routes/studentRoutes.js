@@ -21,11 +21,12 @@ router.get('/last-updated', (req, res) => {
 // GET all students
 router.get('/all', async (req, res) => {
     try {
-    const students = await Student.find({});
-      res.json(students);
+        const students = await Student.find({});
+        console.log(`Found ${students.length} total students`);
+        res.json(students);
     } catch (error) {
-    console.error('Error fetching students:', error);
-    res.status(500).json({ error: 'Failed to fetch students' });
+        console.error('Error fetching students:', error);
+        res.status(500).json({ error: 'Failed to fetch students' });
     }
 });
 
@@ -35,12 +36,12 @@ router.get("/admissions", async (req, res) => {
         const students = await Student.aggregate([
             { 
                 $match: { 
-                    college: { $exists: true, $ne: null, $ne: "" } 
+                    'College': { $exists: true, $ne: null, $ne: "" } 
                 } 
             },
             { 
                 $group: { 
-                    _id: "$college", 
+                    _id: "$College", 
                     count: { $sum: 1 } 
                 } 
             },
@@ -54,8 +55,10 @@ router.get("/admissions", async (req, res) => {
             count: item.count
         }));
 
+        console.log(`Found ${result.length} colleges with admissions data`);
         res.json(result);
     } catch (err) {
+        console.error("Error in admissions:", err);
         res.status(500).json({ error: "Failed to fetch admission data" });
     }
 });
@@ -66,7 +69,11 @@ router.get('/tenk-fees', async (req, res) => {
         console.log("Attempting to fetch 10K fee data...");
         
         // Get all students with their exact fields from database
-        const students = await Student.find({}).select('-__v -createdAt -updatedAt').lean();
+        const students = await Student.find({
+            '10K': { $regex: /^yes$/i }  // Case-insensitive match for "yes"
+        }).select('-__v -createdAt -updatedAt').lean();
+        
+        console.log(`Found ${students.length} students with 10K fees paid`);
         res.json(students);
     } catch (error) {
         console.error("Error fetching 10K student fee records:", error);
@@ -80,12 +87,12 @@ router.get("/sem-fee-paid", async (req, res) => {
         const paidColleges = await Student.aggregate([
             { 
                 $match: { 
-                    semFee: { $regex: /^yes$/i } 
+                    'Sem Fee': { $regex: /^yes$/i }  // Case-insensitive match for "yes"
                 } 
             },
             { 
                 $group: { 
-                    _id: "$college", 
+                    _id: "$College", 
                     count: { $sum: 1 } 
                 } 
             }
@@ -96,6 +103,7 @@ router.get("/sem-fee-paid", async (req, res) => {
             fees: item.count
         }));
 
+        console.log(`Found ${result.length} colleges with semester fees paid`);
         res.json(result);
     } catch (error) {
         console.error("Error in sem fee paid:", error);
@@ -109,12 +117,12 @@ router.get("/girls", async (req, res) => {
         const girlsCount = await Student.aggregate([
             { 
                 $match: { 
-                    gender: { $regex: /^female$/i } 
+                    'Gender': 'Female'
                 } 
             },
             { 
                 $group: { 
-                    _id: "$college", 
+                    _id: "$College", 
                     count: { $sum: 1 } 
                 } 
             }
@@ -127,6 +135,7 @@ router.get("/girls", async (req, res) => {
             }
         });
 
+        console.log(`Found girls count data for ${Object.keys(result).length} colleges`);
         res.json(result);
     } catch (error) {
         console.error("Error in girls count:", error);
@@ -138,18 +147,18 @@ router.get("/girls", async (req, res) => {
 router.get("/withdrawals", async (req, res) => {
     try {
         // Get all colleges first
-        const allColleges = await Student.distinct("college");
+        const allColleges = await Student.distinct("College");
         
         // Get colleges with withdrawals
         const withdrawalCounts = await Student.aggregate([
             { 
                 $match: { 
-                    withdrawal: { $regex: /^withdrawn$/i }
+                    'Withdrawal': 'Confirmed'
                 } 
             },
             { 
                 $group: { 
-                    _id: "$college", 
+                    _id: "$College", 
                     count: { $sum: 1 } 
                 } 
             }
@@ -169,6 +178,7 @@ router.get("/withdrawals", async (req, res) => {
             count: withdrawalMap[college] || 0
         }));
 
+        console.log(`Found withdrawal data for ${withdrawalCounts.length} colleges`);
         res.json(result);
     } catch (error) {
         console.error("Error in withdrawals:", error);
@@ -206,10 +216,13 @@ router.get("/filling-status", async (req, res) => {
 // GET Previous Years Data
 router.get('/previous-years', async (req, res) => {
     try {
-        const universities = await Student.distinct("college");
+        const universities = await Student.distinct('College');
         const counts2025 = await Promise.all(
             universities.map(university => 
-                Student.countDocuments({ college: university, semFee: "Yes" })
+                Student.countDocuments({ 
+                    'College': university, 
+                    'Sem Fee': { $regex: /^yes$/i }
+                })
             )
         );
         
@@ -241,28 +254,27 @@ router.post('/suggestions', async (req, res) => {
     // Get matches from all fields
     const matches = await Student.find({
       $or: [
-        { firstName: searchRegex },
-        { lastName: searchRegex },
-        { college: searchRegex },
-        { transactionId: searchRegex }
+        { 'First Name': searchRegex },
+        { 'Last Name': searchRegex },
+        { 'College': searchRegex },
+        { 'Transaction id': searchRegex }
       ]
     }).limit(10);
 
     // Extract and deduplicate suggestions
     const suggestions = new Set();
     matches.forEach(student => {
-      // Check each field and add if it matches the search term
-      if (searchRegex.test(student.firstName)) {
-        suggestions.add(student.firstName);
+      if (searchRegex.test(student['First Name'])) {
+        suggestions.add(student['First Name']);
       }
-      if (searchRegex.test(student.lastName)) {
-        suggestions.add(student.lastName);
+      if (searchRegex.test(student['Last Name'])) {
+        suggestions.add(student['Last Name']);
       }
-      if (searchRegex.test(student.college)) {
-        suggestions.add(student.college.trim());
+      if (searchRegex.test(student['College'])) {
+        suggestions.add(student['College'].trim());
       }
-      if (searchRegex.test(student.transactionId)) {
-        suggestions.add(student.transactionId);
+      if (searchRegex.test(student['Transaction id'])) {
+        suggestions.add(student['Transaction id']);
       }
     });
 
@@ -270,7 +282,7 @@ router.post('/suggestions', async (req, res) => {
   } catch (error) {
     console.error('Error generating suggestions:', error);
     res.status(500).json({ error: 'Failed to generate suggestions' });
-    }
+  }
 });
 
 // **POST - Add a New Student**
@@ -325,7 +337,7 @@ router.get('/count', async (req, res) => {
 router.get('/college/:college', async (req, res) => {
   try {
     const { college } = req.params;
-    const students = await Student.find({ college: new RegExp(college, 'i') });
+    const students = await Student.find({ 'College': new RegExp(college, 'i') });
     res.json(students);
   } catch (error) {
     console.error('Error fetching students by college:', error);
@@ -339,10 +351,10 @@ router.get('/search', async (req, res) => {
     const { query } = req.query;
     const students = await Student.find({
       $or: [
-        { firstName: new RegExp(query, 'i') },
-        { lastName: new RegExp(query, 'i') },
-        { transactionId: new RegExp(query, 'i') },
-        { college: new RegExp(query, 'i') }
+        { 'First Name': new RegExp(query, 'i') },
+        { 'Last Name': new RegExp(query, 'i') },
+        { 'Transaction id': new RegExp(query, 'i') },
+        { 'College': new RegExp(query, 'i') }
       ]
     });
     res.json(students);
@@ -352,6 +364,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// GET Fast-Slow Filling Colleges
 const getFastAndSlowFillingColleges = async () => {
   try {
     // Get the last 7 days' date range
@@ -364,13 +377,14 @@ const getFastAndSlowFillingColleges = async () => {
     });
 
     // First, get all distinct colleges
-    const allColleges = await Student.distinct('college');
+    const allColleges = await Student.distinct('College');
+    console.log(`Found ${allColleges.length} total colleges`);
     
     // Get all colleges with their upload counts in the last 7 days
     const collegesWithUploads = await Student.aggregate([
       {
         $match: {
-          uploadDate: {
+          'Upload date': {
             $exists: true,
             $ne: null,
             $ne: ""
@@ -379,16 +393,15 @@ const getFastAndSlowFillingColleges = async () => {
       },
       {
         $addFields: {
-          // Convert dd-mm-yyyy to Date object for comparison
           parsedDate: {
             $dateFromString: {
               dateString: {
                 $concat: [
-                  { $substr: ["$uploadDate", 6, 4] }, // year
+                  { $substr: ["$Upload date", 6, 4] }, // year
                   "-",
-                  { $substr: ["$uploadDate", 3, 2] }, // month
+                  { $substr: ["$Upload date", 3, 2] }, // month
                   "-",
-                  { $substr: ["$uploadDate", 0, 2] }  // day
+                  { $substr: ["$Upload date", 0, 2] }  // day
                 ]
               },
               format: "%Y-%m-%d"
@@ -406,7 +419,7 @@ const getFastAndSlowFillingColleges = async () => {
       },
       {
         $group: {
-          _id: { $trim: { input: "$college" } }, // Trim whitespace from college names
+          _id: { $trim: { input: "$College" } },
           uploadCount: { $sum: 1 }
         }
       },
@@ -422,7 +435,7 @@ const getFastAndSlowFillingColleges = async () => {
       }))
     );
 
-    // If no colleges have uploads in the last 7 days
+    // If no colleges have uploads in the last 7 days, consider all colleges as slow filling
     if (collegesWithUploads.length === 0) {
       const result = {
         fastFillingColleges: [],

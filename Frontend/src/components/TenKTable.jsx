@@ -86,17 +86,17 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
 
     if (selectedCollege) {
       filtered = filtered.filter(student =>
-        student?.college?.toLowerCase() === selectedCollege.toLowerCase()
+        student?.['College']?.toLowerCase() === selectedCollege.toLowerCase()
       );
     }
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(student => {
-        const firstName = student?.firstName || '';
-        const lastName = student?.lastName || '';
-        const transactionId = student?.transactionId || '';
-        const college = student?.college || '';
+        const firstName = student?.['First Name'] || '';
+        const lastName = student?.['Last Name'] || '';
+        const transactionId = student?.['Transaction id'] || '';
+        const college = student?.['College'] || '';
         return firstName.toLowerCase().includes(searchLower) ||
                lastName.toLowerCase().includes(searchLower) ||
                transactionId.toString().includes(searchLower) ||
@@ -190,20 +190,20 @@ const TenKTable = ({ selectedMonth, selectedCollege }) => {
             {currentStudents.length > 0 ? (
               currentStudents.map((student) => (
                 <tr key={student._id}>
-                  <td>{student?.uploadDate || 'N/A'}</td>
-                  <td>{student?.dateOfPayment || 'N/A'}</td>
-                  <td>{student?.transactionId || 'N/A'}</td>
-                  <td className="font-semibold">{student?.firstName || 'N/A'}</td>
-                  <td className="font-semibold">{student?.lastName || 'N/A'}</td>
-                  <td>{student?.college?.trim() || 'N/A'}</td>
+                  <td>{student?.['Upload date'] || 'N/A'}</td>
+                  <td>{student?.['Date of payment'] || 'N/A'}</td>
+                  <td>{student?.['Transaction id'] || 'N/A'}</td>
+                  <td className="font-semibold">{student?.['First Name'] || 'N/A'}</td>
+                  <td className="font-semibold">{student?.['Last Name'] || 'N/A'}</td>
+                  <td>{student?.['College']?.trim() || 'N/A'}</td>
                   <td>
-                    <span className={`tenk-badge ${(student?.feePaid || '').toLowerCase() === 'yes' ? 'yes' : 'no'}`}>
-                      {student?.feePaid || 'No'}
+                    <span className={`tenk-badge ${(student?.['10K'] || '').toLowerCase() === 'yes' ? 'yes' : 'no'}`}>
+                      {student?.['10K'] || 'No'}
                     </span>
                   </td>
                   <td>
-                    <span className={`sem-badge ${(student?.semFee || '').toLowerCase() === 'yes' ? 'yes' : 'no'}`}>
-                      {student?.semFee || 'No'}
+                    <span className={`sem-badge ${(student?.['Sem Fee'] || '').toLowerCase() === 'yes' ? 'yes' : 'no'}`}>
+                      {student?.['Sem Fee'] || 'No'}
                     </span>
                   </td>
                 </tr>

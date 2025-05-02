@@ -1,55 +1,56 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
-  uploadDate: {
+  'Upload date': {
     type: String,
-    required: true
+    required: false
   },
-  dateOfPayment: {
+  'Date of payment': {
     type: String,
-    required: true
+    required: false
   },
-  transactionId: {
+  'Transaction id': {
     type: String,
-    required: true,
+    required: false,
     index: { unique: true, sparse: true }
   },
-  firstName: {
+  'First Name': {
     type: String,
-    required: true
+    required: false
   },
-  lastName: {
+  'Last Name': {
     type: String,
-    required: true
+    required: false
   },
-  college: {
+  'College': {
     type: String,
-    required: true
+    required: false
   },
-  feePaid: {
+  '10K': {
     type: String,
-    enum: ['Yes', 'No'],
-    required: true
+    enum: ['Yes', 'No', 'yes', 'no', 'YES', 'NO'],
+    required: false
   },
-  semFee: {
+  'Sem Fee': {
     type: String,
-    enum: ['Yes', 'No'],
-    required: true
+    enum: ['Yes', 'No', 'yes', 'no', 'YES', 'NO'],
+    required: false
   },
-  gender: {
+  'Gender': {
     type: String
   },
-  fees: {
+  'Fees': {
     type: String
   },
-  year: {
+  'Year': {
     type: Number
   },
-  withdrawal: {
+  'Withdrawal': {
     type: String
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'students'
 });
 
 module.exports = mongoose.model('Student', studentSchema);

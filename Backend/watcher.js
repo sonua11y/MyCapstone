@@ -49,10 +49,6 @@ let lastModifiedTime = null;
 
 // Get the CSV file path based on environment
 const getFilePath = () => {
-  if (process.env.NODE_ENV === 'production') {
-    // In production, don't use local file path
-    return null;
-  }
   return process.env.CSV_PATH || path.join(__dirname, 'data', 'mock-data.csv');
 };
 
@@ -60,10 +56,6 @@ const filePath = getFilePath();
 
 // Function to check if file exists
 const ensureFileExists = () => {
-  if (!filePath) {
-    // In production, we don't need the file to exist
-    return false;
-  }
   if (!fs.existsSync(filePath)) {
     console.log('CSV file not found at:', filePath);
     return false;
@@ -73,10 +65,6 @@ const ensureFileExists = () => {
 
 // Function to get last modified time
 const getLastModifiedTime = () => {
-  if (!filePath) {
-    // In production, return current time
-    return new Date();
-  }
   try {
     if (fs.existsSync(filePath)) {
       const stats = fs.statSync(filePath);
@@ -99,91 +87,66 @@ const mapCSVToStudent = (csvData) => {
   }
 
   return {
-    uploadDate: csvData["Upload date"] || "N/A",
-    dateOfPayment: csvData["Date of payment"] || "N/A",
-    transactionId: transactionId,
-    firstName: csvData["First Name"] || "",
-    lastName: csvData["Last Name"] || "",
-    college: csvData["College"] ? csvData["College"].trim() : "",
-    feePaid: csvData["10K"] || "No",
-    semFee: csvData["Sem Fee"] || "No",
-    gender: csvData["Gender"] || "",
-    fees: csvData["Fees"] || "",
-    year: csvData["Year"] || "2025",
-    withdrawal: csvData["Withdrawal"] || ""
+    'Upload date': csvData["Upload date"] || "N/A",
+    'Date of payment': csvData["Date of payment"] || "N/A",
+    'Transaction id': transactionId,
+    'First Name': csvData["First Name"] || "",
+    'Last Name': csvData["Last Name"] || "",
+    'College': csvData["College"] ? csvData["College"].trim() : "",
+    '10K': csvData["10K"] || "No",
+    'Sem Fee': csvData["Sem Fee"] || "No",
+    'Gender': csvData["Gender"] || "",
+    'Fees': csvData["Fees"] || "",
+    'Year': csvData["Year"] || "2025",
+    'Withdrawal': csvData["Withdrawal"] || ""
   };
 };
 
-// Function to update MongoDB from CSV
+// Function to update MongoDB with CSV data
 const updateMongoDB = async () => {
+  if (!ensureFileExists()) {
+    return false;
+  }
+
   try {
     console.log('Starting MongoDB update from CSV...');
     const students = [];
-    let rowCount = 0;
-    let errorCount = 0;
     
     // Read CSV file
     await new Promise((resolve, reject) => {
       fs.createReadStream(filePath)
         .pipe(csv())
         .on('data', (data) => {
-          rowCount++;
-          try {
-            const student = mapCSVToStudent(data);
-            students.push(student);
-          } catch (error) {
-            errorCount++;
-            console.error(`Error processing row ${rowCount}`);
-          }
+          const student = mapCSVToStudent(data);
+          students.push(student);
         })
-        .on('end', resolve)
-        .on('error', reject);
+        .on('end', () => {
+          console.log(`Processed ${students.length} rows with 0 errors`);
+          resolve();
+        })
+        .on('error', (error) => {
+          console.error('Error reading CSV:', error);
+          reject(error);
+        });
     });
 
-    console.log(`Processed ${rowCount} rows with ${errorCount} errors`);
-
-    if (students.length === 0) {
-      console.error('No valid students to insert');
-      return false;
-    }
-
-    // Wait for MongoDB connection to be ready
-    while (mongoose.connection.readyState !== 1) {
-      console.log('Waiting for MongoDB connection...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
     // Delete existing records
-    await Student.deleteMany({});
     console.log('Deleted existing records');
+    await Student.deleteMany({});
 
     // Insert new records in batches
     const batchSize = 50;
     for (let i = 0; i < students.length; i += batchSize) {
-      const batch = students.slice(i, Math.min(i + batchSize, students.length));
-      try {
-        await Student.insertMany(batch, { 
-          ordered: false,
-          timeout: 30000
-        });
-        console.log(`Inserted batch ${Math.floor(i/batchSize) + 1} of ${Math.ceil(students.length/batchSize)}`);
-      } catch (error) {
-        if (error.writeErrors) {
-          console.error(`Batch ${Math.floor(i/batchSize) + 1} had ${error.writeErrors.length} write errors`);
-        } else {
-          console.error(`Error in batch ${Math.floor(i/batchSize) + 1}:`, error);
-        }
-      }
+      const batch = students.slice(i, i + batchSize);
+      await Student.insertMany(batch);
+      console.log(`Inserted batch ${Math.floor(i/batchSize) + 1} of ${Math.ceil(students.length/batchSize)}`);
     }
 
     // Update lastModifiedTime
-    const stats = fs.statSync(filePath);
-    lastModifiedTime = stats.mtime;
+    lastModifiedTime = getLastModifiedTime();
     console.log('Updated lastModifiedTime:', lastModifiedTime);
-
-    const finalCount = await Student.countDocuments();
-    console.log(`Final document count in MongoDB: ${finalCount}`);
-
+    console.log('Final document count in MongoDB:', await Student.countDocuments());
+    
     return true;
   } catch (error) {
     console.error('Error updating MongoDB:', error);
@@ -191,24 +154,24 @@ const updateMongoDB = async () => {
   }
 };
 
-// Function to check if file has changed
+// Function to check for file changes
 const checkFileChange = async () => {
-  try {
-    if (!filePath) {
-      console.log('CSV file not found:', filePath);
-      return false;
-    }
-
-    const stats = fs.statSync(filePath);
-    if (!lastModifiedTime || stats.mtime > lastModifiedTime) {
-      console.log('File has changed, updating MongoDB...');
-      return await updateMongoDB();
-    }
-    return false;
-  } catch (error) {
-    console.error('Error checking file change:', error);
+  if (!ensureFileExists()) {
     return false;
   }
+
+  const currentModifiedTime = getLastModifiedTime();
+  if (currentModifiedTime > lastModifiedTime) {
+    console.log('File changed, updating MongoDB...');
+    const success = await updateMongoDB();
+    if (success) {
+      console.log('MongoDB update successful');
+    } else {
+      console.log('MongoDB update failed');
+    }
+    return true;
+  }
+  return false;
 };
 
 // Initial update
@@ -228,38 +191,24 @@ if (ensureFileExists()) {
   console.log('Please add your CSV file to:', filePath);
 }
 
-// Set up file watching only in development
-if (process.env.NODE_ENV !== 'production' && filePath) {
-  console.log('Setting up file watcher in development mode...');
-  try {
-fs.watch(filePath, async (eventType) => {
-  if (eventType === 'change') {
-    console.log('File changed, checking for updates...');
-    await checkFileChange();
-  }
-});
-    console.log('File watcher set up successfully');
-  } catch (error) {
-    console.error('Error setting up file watcher:', error);
-    console.log('File watching disabled');
-  }
-} else {
-  console.log('File watching disabled in production mode');
+// Set up file watching
+console.log('Setting up file watcher...');
+try {
+  fs.watch(filePath, async (eventType) => {
+    if (eventType === 'change') {
+      console.log('File changed, checking for updates...');
+      await checkFileChange();
+    }
+  });
+  console.log('File watcher set up successfully');
+} catch (error) {
+  console.error('Error setting up file watcher:', error);
+  console.log('File watching disabled');
 }
 
 // Export functions
 module.exports = {
   getLastModifiedTime,
-  checkFileChange: async () => {
-    // In production, always return false to indicate no changes
-    if (process.env.NODE_ENV === 'production') return false;
-    // Rest of the checkFileChange implementation...
-    return false;
-  },
-  updateMongoDB: async () => {
-    // In production, return false as we don't update from CSV
-    if (process.env.NODE_ENV === 'production') return false;
-    // Rest of the updateMongoDB implementation...
-    return false;
-  }
+  checkFileChange,
+  updateMongoDB
 };
