@@ -46,9 +46,10 @@ const port = process.env.PORT || 5000;
 
 // CORS Configuration
 const allowedOrigins = [
-  'http://localhost:3000',  // Development    // New Netlify domain
-  'https://kalstudentadmissiontracker.netlify.app', // New frontend domain
-  'https://mycapstone-3.onrender.com'  // Backend itself
+  'http://localhost:3000',  // Development
+  'https://kalstudentadmissiontracker.netlify.app', // Old frontend domain // New frontend domain
+  'https://mycapstone-3.onrender.com',  // Backend itself
+  'https://accounts.google.com' // Google authentication
 ];
 
 app.use(cors({
@@ -64,7 +65,7 @@ app.use(cors({
     return callback(new Error(msg), false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'Access-Control-Allow-Origin'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -72,6 +73,15 @@ app.use(cors({
 
 // Handle preflight requests
 app.options('*', cors());
+
+// Add CORS headers to all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  next();
+});
 
 app.use(express.json());
 
