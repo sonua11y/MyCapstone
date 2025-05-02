@@ -12,7 +12,7 @@ const getCallbackURL = () => {
 };
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
-    ? 'https://deployadmissiontracker.netlify.app'
+    ? 'https://kalstudentadmissiontracker.netlify.app'
     : 'http://localhost:3000';
 
 console.log('OAuth Configuration:', {

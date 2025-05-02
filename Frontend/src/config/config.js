@@ -29,7 +29,7 @@ export const config = {
         googleCallback: `${currentEnv.apiUrl}/auth/google/callback`,
         successRedirect: currentEnv.env === 'development' 
             ? 'http://localhost:3000/auth/success'
-            : 'https://deployadmissiontracker.netlify.app/auth/success'
+            : 'https://kalstudentadmissiontracker.netlify.app/auth/success'
     },
     isProduction: currentEnv.env === 'production',
     isDevelopment: currentEnv.env === 'development'

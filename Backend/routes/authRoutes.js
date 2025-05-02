@@ -10,7 +10,7 @@ const passport = require('passport');
 dotenv.config();
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
-    ? 'https://deployadmissiontracker.netlify.app'
+    ? 'https://kalstudentadmissiontracker.netlify.app'
     : 'http://localhost:3000';
 
 // Debug environment variables and configuration
