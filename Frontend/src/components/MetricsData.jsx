@@ -60,19 +60,19 @@ const MetricsData = () => {
                     icon={<Zap size={25} color="#000" />}
                 />
                 <MetricCard
-                    title="Number of Girls"
+                    title="Girls Paid Semester Fee"
                     value={metrics.totalGirls}
                     bgColor="bg-blue"
                     icon={<Lightbulb size={25} color="#000" />}
                 />
                 <MetricCard
-                    title="No. of Semester Fee Paid Students"
+                    title="Students Paid Semester Fee"
                     value={metrics.semFeePaid}
                     bgColor="bg-orange"
                     icon={<AlertCircle size={25} color="#000" />}
                 />
                 <MetricCard
-                    title="Withdrawn seats"
+                    title="Seats Withdrawn"
                     value={metrics.withdrawn}
                     bgColor="bg-pink"
                     icon={<Bike size={25} color="#000" />}
