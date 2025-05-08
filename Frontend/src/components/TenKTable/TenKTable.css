@@ -30,7 +30,7 @@
 
 .tenk-table tr:hover {
   background-color: #070707;
-}
+} 
 
 .tenk-table tr:last-child td {
   border-bottom: none;

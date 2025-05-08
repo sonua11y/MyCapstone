@@ -182,7 +182,11 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 
 ## 10. Development Workflow
 
-[Note: Insert Development Workflow Diagram Here]
+graph LR
+    A[Development] --> B[Testing]
+    B --> C[Production]
+    C --> D[Deployment]
+    D --> E[Monitoring]
 
 **Workflow Stages:**
 1. Local development
